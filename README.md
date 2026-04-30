@@ -92,19 +92,11 @@ For every word in UyUDT with > 1 Apertium reading after CG:
 - No publicly available, electronic Uyghur–English dictionary published in the last ~50 years
 - **TODO**: Explore alternative approaches to construct a word list or dictionary suitable for this pipeline
 
----
-
-## Open Questions
-
-1. Is UPOS (or DEPREL) a principled and sufficient basis for morphological disambiguation in Uyghur? Can a more linguistically motivated method be developed that is still practically feasible?
-2. How can a usable Uyghur–English lexical resource be obtained or constructed?
 
 ---
 
 ## Next Steps
 
-- [ ] Run UPOS filter test; record result and assess whether Approach A is viable
-- [ ] Based on result: decide on final disambiguation approach
 - [ ] Explore dictionary alternatives (scraped resources, bilingual corpora, other lexicons, LLM-generated entries, etc.)
 
 ---
