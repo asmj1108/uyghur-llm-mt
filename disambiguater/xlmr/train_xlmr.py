@@ -3,6 +3,8 @@ import json
 import re
 import numpy as np
 import torch
+import shutil
+import glob
 from dataclasses import dataclass
 from typing import List, Dict, Any
 from collections import defaultdict
@@ -17,52 +19,58 @@ from transformers import (
     set_seed,
 )
 
+
 # =============================================================================
-# CONFIG — adjust these
+# CONFIG
 # =============================================================================
-MODEL_NAME = "xlm-roberta-large"
+def _env(key, default, cast=str):
+    v = os.environ.get(key)
+    if v is None:
+        return default
+    if cast is bool:
+        return v.lower() in ("1", "true", "yes")
+    return cast(v)
+
+
+MODEL_NAME = _env("CFG_MODEL_NAME", "xlm-roberta-large")
 LABEL_VOCAB_FILE = "../label_vocab.json"
 TRAIN_FILE = "../train.jsonl"
 DEV_FILE = "../dev.jsonl"
 TEST_FILE = "../test.jsonl"
-OUTPUT_DIR = "xlmr-uyghur-morph-v2"
+OUTPUT_DIR = _env("CFG_OUTPUT_DIR", "xlmr-uyghur-morph-v1.1")
 
-MAX_LENGTH = 192
-SEED = 42
+MAX_LENGTH = _env("CFG_MAX_LENGTH", 192, int)
+SEED = _env("CFG_SEED", 42, int)
 
-# ---- Target-word grounding ----
 USE_TARGET_MARKERS = True
 T_OPEN, T_CLOSE = "<t>", "</t>"
 
-# ---- Hyperparameters ----
-NUM_EPOCHS = 20
-TRAIN_BATCH_SIZE = 32
-EVAL_BATCH_SIZE = 64
-GRAD_ACCUM_STEPS = 1
-LEARNING_RATE = 1e-5  # base LR (top of the LLRD schedule)
-WEIGHT_DECAY = 0.01
-WARMUP_RATIO = 0.06
-CLASSIFIER_DROPOUT = 0.2
-GRAD_CHECKPOINTING = False  # set True if xlm-roberta-large OOMs
+NUM_EPOCHS = _env("CFG_NUM_EPOCHS", 15, int)
+TRAIN_BATCH_SIZE = _env("CFG_TRAIN_BATCH_SIZE", 32, int)
+EVAL_BATCH_SIZE = _env("CFG_EVAL_BATCH_SIZE", 128, int)
+GRAD_ACCUM_STEPS = _env("CFG_GRAD_ACCUM_STEPS", 1, int)
+LEARNING_RATE = _env("CFG_LEARNING_RATE", 1e-5, float)
+WEIGHT_DECAY = _env("CFG_WEIGHT_DECAY", 0.01, float)
+WARMUP_RATIO = _env("CFG_WARMUP_RATIO", 0.10, float)
+CLASSIFIER_DROPOUT = _env("CFG_CLASSIFIER_DROPOUT", 0.2, float)
+GRAD_CHECKPOINTING = _env("CFG_GRAD_CHECKPOINTING", False, bool)
 
-# ---- Layer-wise LR decay ----
-USE_LLRD = True
-LLRD_DECAY = 0.95
+USE_LLRD = _env("CFG_USE_LLRD", True, bool)
+LLRD_DECAY = _env("CFG_LLRD_DECAY", 0.9, float)
 
-# ---- Eval / early stopping ----
-EVAL_STEPS = 100
-SAVE_STEPS = 100
-EARLY_STOPPING_PATIENCE = 6  # eval-rounds (= 600 steps here) without improvement
-METRIC_FOR_BEST = "cand_acc_llm_based"
+EVAL_STEPS = _env("CFG_EVAL_STEPS", 50, int)
+SAVE_STEPS = _env("CFG_SAVE_STEPS", 50, int)
+EARLY_STOPPING_PATIENCE = _env("CFG_EARLY_STOPPING_PATIENCE", 8, int)
+METRIC_FOR_BEST = _env("CFG_METRIC_FOR_BEST", "cand_acc_llm_based")
 GREATER_IS_BETTER = True
 
 # ---- Loss for label imbalance ----
 #   "bce"     : plain BCEWithLogitsLoss (HF default for multi_label)
 #   "weighted": BCE with per-label pos_weight = neg/pos (clamped)
 #   "focal"   : focal BCE (gamma), optionally combined with pos_weight
-LOSS_TYPE = "focal"
-FOCAL_GAMMA = 2.0
-FOCAL_USE_POS_WEIGHT = False
+LOSS_TYPE = _env("CFG_LOSS_TYPE", "focal")
+FOCAL_GAMMA = _env("CFG_FOCAL_GAMMA", 2.0, float)
+FOCAL_USE_POS_WEIGHT = _env("CFG_FOCAL_USE_POS_WEIGHT", False, bool)
 
 EPS = 1e-7
 
@@ -425,7 +433,8 @@ def main():
         greater_is_better=GREATER_IS_BETTER,
         save_total_limit=2,
         seed=SEED,
-        fp16=torch.cuda.is_available(),
+        bf16=torch.cuda.is_available(),
+        fp16=False,
         report_to="none",
     )
 
@@ -470,20 +479,42 @@ def main():
     tokenizer.save_pretrained(best_dir)
     print(f"\n✅ Best model saved to {best_dir}")
 
-    # ---- Final test eval ----
-    print("\n--- Test evaluation ---")
-    # Detach early-stopping callback so it doesn't warn on prefixed metric keys
+    # ---- CLEANUP INTERMEDIATE CHECKPOINTS ----
+    print("\n🧹 Cleaning up intermediate checkpoints...")
+    for ckpt_dir in glob.glob(os.path.join(OUTPUT_DIR, "checkpoint-*")):
+        if os.path.isdir(ckpt_dir):
+            shutil.rmtree(ckpt_dir)
+
+    # Detach early-stopping callback so it doesn't warn
     trainer.callback_handler.callbacks = [
         cb for cb in trainer.callback_handler.callbacks
         if not isinstance(cb, EarlyStoppingCallback)
     ]
+
+    print("\n--- Final Evaluation: DEV (for hyperparameter selection) ---")
+    trainer.compute_metrics = make_compute_metrics(
+        dev_ds.cand_id_sets, dev_ds.gold_cand_idx, num_labels, sources=dev_ds.sources)
+    dev_metrics = trainer.evaluate(eval_dataset=dev_ds, metric_key_prefix="eval")
+
+    print("\n--- Final Evaluation: TEST (UNSEEN, for thesis reporting only) ---")
     trainer.compute_metrics = make_compute_metrics(
         test_ds.cand_id_sets, test_ds.gold_cand_idx, num_labels, sources=test_ds.sources)
     test_metrics = trainer.evaluate(eval_dataset=test_ds, metric_key_prefix="test")
-    print(json.dumps(test_metrics, indent=2))
 
-    with open(os.path.join(OUTPUT_DIR, "test_metrics.json"), "w", encoding="utf-8") as f:
-        json.dump(test_metrics, f, indent=2)
+    # Combine and save
+    all_metrics = {**dev_metrics, **test_metrics}
+
+    with open(os.path.join(OUTPUT_DIR, "run_metrics.json"), "w", encoding="utf-8") as f:
+        json.dump(all_metrics, f, indent=2)
+
+    # Dump the config so we know what generated these metrics
+    with open(os.path.join(OUTPUT_DIR, "run_config.json"), "w", encoding="utf-8") as f:
+        json.dump({
+            "model": MODEL_NAME, "seed": SEED, "lr": LEARNING_RATE,
+            "llrd_decay": LLRD_DECAY, "loss_type": LOSS_TYPE,
+            "focal_pos_weight": FOCAL_USE_POS_WEIGHT,
+            "train_batch": TRAIN_BATCH_SIZE, "warmup": WARMUP_RATIO,
+        }, f, indent=2)
 
 
 if __name__ == "__main__":
