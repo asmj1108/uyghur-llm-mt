@@ -55,7 +55,7 @@ WARMUP_RATIO = _env("CFG_WARMUP_RATIO", 0.10, float)
 CLASSIFIER_DROPOUT = _env("CFG_CLASSIFIER_DROPOUT", 0.2, float)
 GRAD_CHECKPOINTING = _env("CFG_GRAD_CHECKPOINTING", False, bool)
 
-USE_LLRD = _env("CFG_USE_LLRD", True, bool)
+USE_LLRD = _env("CFG_USE_LLRD", False, bool)
 LLRD_DECAY = _env("CFG_LLRD_DECAY", 0.9, float)
 
 EVAL_STEPS = _env("CFG_EVAL_STEPS", 50, int)
@@ -510,7 +510,7 @@ def main():
     # Dump the config so we know what generated these metrics
     with open(os.path.join(OUTPUT_DIR, "run_config.json"), "w", encoding="utf-8") as f:
         json.dump({
-            "model": MODEL_NAME, "seed": SEED, "lr": LEARNING_RATE,
+            "model": MODEL_NAME, "seed": SEED, "lr": LEARNING_RATE, "use_llrd": USE_LLRD,
             "llrd_decay": LLRD_DECAY, "loss_type": LOSS_TYPE,
             "focal_pos_weight": FOCAL_USE_POS_WEIGHT,
             "train_batch": TRAIN_BATCH_SIZE, "warmup": WARMUP_RATIO,
