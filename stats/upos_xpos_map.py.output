@@ -1,0 +1,256 @@
+========================================
+Dataset Statistics:
+Total valid tokens: 40236
+Tokens with missing XPOS ('_'): 0
+Unique XPOS tags found: 15
+XPOS Set: ['A', 'C', 'D', 'E', 'I', 'LW', 'M', 'N', 'P', 'Q', 'R', 'T', 'V', 'X', 'Y']
+========================================
+
+--- XPOS to UPOS Mapping Frequencies ---
+(Use this to find instances where an XPOS is used for strange UPOS tags)
+XPOS 'A' (Total: 2791) maps to:
+   -> ADJ: 2323 times (83.2%)
+   -> NOUN: 312 times (11.2%)
+   -> VERB: 90 times (3.2%)
+   -> ADV: 31 times (1.1%)
+   -> DET: 15 times (0.5%)
+   -> NUM: 10 times (0.4%)
+   -> PUNCT: 8 times (0.3%)
+   -> AUX: 2 times (0.1%)
+
+XPOS 'C' (Total: 792) maps to:
+   -> CCONJ: 503 times (63.5%)
+   -> ADP: 129 times (16.3%)
+   -> ADV: 67 times (8.5%)
+   -> SCONJ: 58 times (7.3%)
+   -> NOUN: 32 times (4.0%)
+   -> VERB: 3 times (0.4%)
+
+XPOS 'D' (Total: 1040) maps to:
+   -> ADV: 597 times (57.4%)
+   -> NOUN: 275 times (26.4%)
+   -> ADJ: 113 times (10.9%)
+   -> PRON: 52 times (5.0%)
+   -> ADP: 3 times (0.3%)
+
+XPOS 'E' (Total: 109) maps to:
+   -> INTJ: 85 times (78.0%)
+   -> ADJ: 13 times (11.9%)
+   -> NOUN: 7 times (6.4%)
+   -> VERB: 4 times (3.7%)
+
+XPOS 'I' (Total: 13) maps to:
+   -> INTJ: 9 times (69.2%)
+   -> NOUN: 2 times (15.4%)
+   -> ADJ: 1 times (7.7%)
+   -> PUNCT: 1 times (7.7%)
+
+XPOS 'LW' (Total: 1) maps to:
+   -> PUNCT: 1 times (100.0%)
+
+XPOS 'M' (Total: 1124) maps to:
+   -> NUM: 976 times (86.8%)
+   -> DET: 62 times (5.5%)
+   -> NOUN: 52 times (4.6%)
+   -> ADJ: 12 times (1.1%)
+   -> PRON: 8 times (0.7%)
+   -> PUNCT: 7 times (0.6%)
+   -> ADV: 6 times (0.5%)
+   -> VERB: 1 times (0.1%)
+
+XPOS 'N' (Total: 13262) maps to:
+   -> NOUN: 12515 times (94.4%)
+   -> ADJ: 233 times (1.8%)
+   -> VERB: 179 times (1.3%)
+   -> PUNCT: 164 times (1.2%)
+   -> PROPN: 81 times (0.6%)
+   -> ADV: 48 times (0.4%)
+   -> ADP: 14 times (0.1%)
+   -> INTJ: 8 times (0.1%)
+   -> NUM: 8 times (0.1%)
+   -> PRON: 4 times (0.0%)
+   -> DET: 4 times (0.0%)
+   -> SCONJ: 3 times (0.0%)
+   -> AUX: 1 times (0.0%)
+
+XPOS 'P' (Total: 3177) maps to:
+   -> PRON: 2629 times (82.8%)
+   -> DET: 291 times (9.2%)
+   -> ADV: 123 times (3.9%)
+   -> NOUN: 89 times (2.8%)
+   -> ADJ: 37 times (1.2%)
+   -> ADP: 7 times (0.2%)
+   -> PUNCT: 1 times (0.0%)
+
+XPOS 'Q' (Total: 151) maps to:
+   -> NOUN: 82 times (54.3%)
+   -> DET: 32 times (21.2%)
+   -> ADV: 28 times (18.5%)
+   -> ADJ: 9 times (6.0%)
+
+XPOS 'R' (Total: 510) maps to:
+   -> ADP: 467 times (91.6%)
+   -> NOUN: 32 times (6.3%)
+   -> VERB: 6 times (1.2%)
+   -> ADJ: 3 times (0.6%)
+   -> ADV: 1 times (0.2%)
+   -> PUNCT: 1 times (0.2%)
+
+XPOS 'T' (Total: 271) maps to:
+   -> PART: 119 times (43.9%)
+   -> ADJ: 52 times (19.2%)
+   -> ADV: 51 times (18.8%)
+   -> NOUN: 26 times (9.6%)
+   -> VERB: 13 times (4.8%)
+   -> AUX: 6 times (2.2%)
+   -> ADP: 2 times (0.7%)
+   -> PRON: 2 times (0.7%)
+
+XPOS 'V' (Total: 9450) maps to:
+   -> VERB: 8029 times (85.0%)
+   -> AUX: 902 times (9.5%)
+   -> NOUN: 306 times (3.2%)
+   -> PUNCT: 112 times (1.2%)
+   -> ADJ: 51 times (0.5%)
+   -> ADV: 30 times (0.3%)
+   -> INTJ: 9 times (0.1%)
+   -> ADP: 6 times (0.1%)
+   -> NUM: 2 times (0.0%)
+   -> X: 1 times (0.0%)
+   -> SCONJ: 1 times (0.0%)
+   -> PRON: 1 times (0.0%)
+
+XPOS 'X' (Total: 13) maps to:
+   -> X: 8 times (61.5%)
+   -> DET: 4 times (30.8%)
+   -> PUNCT: 1 times (7.7%)
+
+XPOS 'Y' (Total: 7532) maps to:
+   -> PUNCT: 7511 times (99.7%)
+   -> X: 19 times (0.3%)
+   -> VERB: 2 times (0.0%)
+
+--- UPOS to XPOS Mapping Frequencies ---
+UPOS 'ADJ' (Total: 2847) derived from:
+   -> XPOS 'A': 2323 times (81.6%)
+   -> XPOS 'N': 233 times (8.2%)
+   -> XPOS 'D': 113 times (4.0%)
+   -> XPOS 'T': 52 times (1.8%)
+   -> XPOS 'V': 51 times (1.8%)
+   -> XPOS 'P': 37 times (1.3%)
+   -> XPOS 'E': 13 times (0.5%)
+   -> XPOS 'M': 12 times (0.4%)
+   -> XPOS 'Q': 9 times (0.3%)
+   -> XPOS 'R': 3 times (0.1%)
+   -> XPOS 'I': 1 times (0.0%)
+
+UPOS 'ADP' (Total: 628) derived from:
+   -> XPOS 'R': 467 times (74.4%)
+   -> XPOS 'C': 129 times (20.5%)
+   -> XPOS 'N': 14 times (2.2%)
+   -> XPOS 'P': 7 times (1.1%)
+   -> XPOS 'V': 6 times (1.0%)
+   -> XPOS 'D': 3 times (0.5%)
+   -> XPOS 'T': 2 times (0.3%)
+
+UPOS 'ADV' (Total: 982) derived from:
+   -> XPOS 'D': 597 times (60.8%)
+   -> XPOS 'P': 123 times (12.5%)
+   -> XPOS 'C': 67 times (6.8%)
+   -> XPOS 'T': 51 times (5.2%)
+   -> XPOS 'N': 48 times (4.9%)
+   -> XPOS 'A': 31 times (3.2%)
+   -> XPOS 'V': 30 times (3.1%)
+   -> XPOS 'Q': 28 times (2.9%)
+   -> XPOS 'M': 6 times (0.6%)
+   -> XPOS 'R': 1 times (0.1%)
+
+UPOS 'AUX' (Total: 911) derived from:
+   -> XPOS 'V': 902 times (99.0%)
+   -> XPOS 'T': 6 times (0.7%)
+   -> XPOS 'A': 2 times (0.2%)
+   -> XPOS 'N': 1 times (0.1%)
+
+UPOS 'CCONJ' (Total: 503) derived from:
+   -> XPOS 'C': 503 times (100.0%)
+
+UPOS 'DET' (Total: 408) derived from:
+   -> XPOS 'P': 291 times (71.3%)
+   -> XPOS 'M': 62 times (15.2%)
+   -> XPOS 'Q': 32 times (7.8%)
+   -> XPOS 'A': 15 times (3.7%)
+   -> XPOS 'N': 4 times (1.0%)
+   -> XPOS 'X': 4 times (1.0%)
+
+UPOS 'INTJ' (Total: 111) derived from:
+   -> XPOS 'E': 85 times (76.6%)
+   -> XPOS 'I': 9 times (8.1%)
+   -> XPOS 'V': 9 times (8.1%)
+   -> XPOS 'N': 8 times (7.2%)
+
+UPOS 'NOUN' (Total: 13730) derived from:
+   -> XPOS 'N': 12515 times (91.2%)
+   -> XPOS 'A': 312 times (2.3%)
+   -> XPOS 'V': 306 times (2.2%)
+   -> XPOS 'D': 275 times (2.0%)
+   -> XPOS 'P': 89 times (0.6%)
+   -> XPOS 'Q': 82 times (0.6%)
+   -> XPOS 'M': 52 times (0.4%)
+   -> XPOS 'R': 32 times (0.2%)
+   -> XPOS 'C': 32 times (0.2%)
+   -> XPOS 'T': 26 times (0.2%)
+   -> XPOS 'E': 7 times (0.1%)
+   -> XPOS 'I': 2 times (0.0%)
+
+UPOS 'NUM' (Total: 996) derived from:
+   -> XPOS 'M': 976 times (98.0%)
+   -> XPOS 'A': 10 times (1.0%)
+   -> XPOS 'N': 8 times (0.8%)
+   -> XPOS 'V': 2 times (0.2%)
+
+UPOS 'PART' (Total: 119) derived from:
+   -> XPOS 'T': 119 times (100.0%)
+
+UPOS 'PRON' (Total: 2696) derived from:
+   -> XPOS 'P': 2629 times (97.5%)
+   -> XPOS 'D': 52 times (1.9%)
+   -> XPOS 'M': 8 times (0.3%)
+   -> XPOS 'N': 4 times (0.1%)
+   -> XPOS 'T': 2 times (0.1%)
+   -> XPOS 'V': 1 times (0.0%)
+
+UPOS 'PROPN' (Total: 81) derived from:
+   -> XPOS 'N': 81 times (100.0%)
+
+UPOS 'PUNCT' (Total: 7807) derived from:
+   -> XPOS 'Y': 7511 times (96.2%)
+   -> XPOS 'N': 164 times (2.1%)
+   -> XPOS 'V': 112 times (1.4%)
+   -> XPOS 'A': 8 times (0.1%)
+   -> XPOS 'M': 7 times (0.1%)
+   -> XPOS 'R': 1 times (0.0%)
+   -> XPOS 'I': 1 times (0.0%)
+   -> XPOS 'LW': 1 times (0.0%)
+   -> XPOS 'P': 1 times (0.0%)
+   -> XPOS 'X': 1 times (0.0%)
+
+UPOS 'SCONJ' (Total: 62) derived from:
+   -> XPOS 'C': 58 times (93.5%)
+   -> XPOS 'N': 3 times (4.8%)
+   -> XPOS 'V': 1 times (1.6%)
+
+UPOS 'VERB' (Total: 8327) derived from:
+   -> XPOS 'V': 8029 times (96.4%)
+   -> XPOS 'N': 179 times (2.1%)
+   -> XPOS 'A': 90 times (1.1%)
+   -> XPOS 'T': 13 times (0.2%)
+   -> XPOS 'R': 6 times (0.1%)
+   -> XPOS 'E': 4 times (0.0%)
+   -> XPOS 'C': 3 times (0.0%)
+   -> XPOS 'Y': 2 times (0.0%)
+   -> XPOS 'M': 1 times (0.0%)
+
+UPOS 'X' (Total: 28) derived from:
+   -> XPOS 'Y': 19 times (67.9%)
+   -> XPOS 'X': 8 times (28.6%)
+   -> XPOS 'V': 1 times (3.6%)

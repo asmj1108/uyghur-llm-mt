@@ -1,0 +1,15 @@
+==========================================================
+  LEMMA vs FEATURE AMBIGUITY ANALYSIS
+==========================================================
+Source file               : uyghur_disambiguation_dataset.jsonl
+Total ambiguous words     : 13852
+----------------------------------------------------------
+Single-lemma (feature-only) :  11438  (82.6%)
+Multi-lemma  (lemma differs):   2414  (17.4%)
+----------------------------------------------------------
+Distribution of distinct base lemmas per word:
+   1 distinct lemma(s):  11438 words
+   2 distinct lemma(s):   2283 words
+   3 distinct lemma(s):    118 words
+   4 distinct lemma(s):     13 words
+----------------------------------------------------------
