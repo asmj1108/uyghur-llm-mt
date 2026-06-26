@@ -56,7 +56,7 @@ CLASSIFIER_DROPOUT = _env("CFG_CLASSIFIER_DROPOUT", 0.2, float)
 GRAD_CHECKPOINTING = _env("CFG_GRAD_CHECKPOINTING", False, bool)
 
 USE_LLRD = _env("CFG_USE_LLRD", False, bool)
-LLRD_DECAY = _env("CFG_LLRD_DECAY", 0.9, float)
+LLRD_DECAY = _env("CFG_LLRD_DECAY", 0.95, float)
 
 EVAL_STEPS = _env("CFG_EVAL_STEPS", 50, int)
 SAVE_STEPS = _env("CFG_SAVE_STEPS", 50, int)
