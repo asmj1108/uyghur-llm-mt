@@ -1,0 +1,27 @@
+Reading CoNLL-U data...
+--> Sending batch of 3456 sentences to Apertium...
+Aligning and applying zero-copula rules...
+
+=======================================================
+ 🚀 ZERO-COPULA HYBRID RULE STATISTICS (UPOS-free) 🚀
+=======================================================
+Total Sentences Processed    : 3456
+Sentences Skipped (Misalign) : 241
+-------------------------------------------------------
+Ambiguous Words Encountered  : 15438
+✅ Fully Resolved to 1       : 4259
+⚠️  Partially Reduced         : 4265
+❌ Untouched (For LLM)       : 6914
+-------------------------------------------------------
+ BREAKDOWN BY RULE:
+  Rule 1a NEGATIVE (modifier/arg → drop <cop>):
+     -> Fully resolved    : 3718
+     -> Partially reduced : 4118
+  Rule 1b POSITIVE-strong (cop:zero head → keep <cop>):
+     -> Fully resolved    : 66
+     -> Partially reduced : 20
+  Rule 1b POSITIVE-weak (root + copula-candidate → keep <cop>):
+     -> Fully resolved    : 475
+     -> Partially reduced : 127
+-------------------------------------------------------
+Rule-Based Intervention Rate : 55.2%

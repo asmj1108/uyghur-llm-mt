@@ -16,13 +16,12 @@ from tqdm import tqdm
 # CONFIGURATION
 # ==========================================
 TEST_MODE = False
-TEST_LIMIT = 50  # sentences when TEST_MODE
+TEST_LIMIT = 1  # sentences when TEST_MODE
 OUTPUT_FILE = "uyghur_disambiguation_dataset.jsonl"
 LABEL_VOCAB_FILE = "label_vocab.json"
 MAX_CONCURRENT = 20
 
-OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY",
-                                    "sk-or-v1-")
+OPENROUTER_API_KEY = os.environ.get("OPENROUTER_API_KEY", "")
 MODEL_NAME = "google/gemini-3.1-flash-lite"
 
 PRICE_PER_1M_PROMPT = 0.25
@@ -69,6 +68,7 @@ TURKISH_SPECIFIC_MAP = {
     'aorp': 'Aorist participle',
     'gna_cond': 'Conditional verbal adverb',
     'iver': 'Continuative aspect',
+    'prog': 'Progressive',
     'ter': 'Terminative converb',
     'che': 'Limitative',
     'td': 'Unspecified transitivity'
@@ -156,7 +156,8 @@ def load_completed_history():
         for line in f:
             try:
                 data = json.loads(line)
-                completed.add((data["sentence"], data["target_word"]))
+                completed.add((data["sentence"], data["target_word"],
+                               data.get("target_occurrence", 0)))
             except (json.JSONDecodeError, KeyError):
                 pass
     print(f"🔄 Checkpoint: {len(completed)} entries already in dataset.")
@@ -424,6 +425,13 @@ def run_phase_1(conllu_data, apertium_dir, completed_history):
                 if not apt_lus:
                     continue
 
+                # occurrence ordinal of each apertium token's wordform (left-to-right)
+                wf_counts, occ_of_aidx = {}, {}
+                for idx, lu in enumerate(apt_lus):
+                    wf = lu.wordform
+                    occ_of_aidx[idx] = wf_counts.get(wf, 0)
+                    wf_counts[wf] = wf_counts.get(wf, 0) + 1
+
                 gf, gflat = filter_and_flatten([t["form"] for t in gold_tokens], "_")
                 af, aflat = filter_and_flatten([lu.wordform for lu in apt_lus], " ")
                 if not gflat or not aflat:
@@ -451,19 +459,20 @@ def run_phase_1(conllu_data, apertium_dir, completed_history):
                         lu = apt_lus[a_idx]
                         if len(lu.readings) <= 1:
                             continue
-                        if (text, lu.wordform) in completed_history:
+                        occ = occ_of_aidx[a_idx]
+                        if (text, lu.wordform, occ) in completed_history:
                             stats["already_done"] += 1
                             continue
 
                         stats["ambiguous"] += 1
 
-                        # ---- 1. DEDUP ----
                         unique = dedup_candidates(lu.readings)
                         candidates_nat = [c["natural"] for c in unique]
                         candidate_feats = [c["feats"] for c in unique]
                         base_entry = {
                             "sentence": text,
                             "target_word": lu.wordform,
+                            "target_occurrence": occ,
                             "candidates": candidates_nat,
                             "candidate_feats": candidate_feats,
                         }
@@ -507,14 +516,27 @@ def run_phase_1(conllu_data, apertium_dir, completed_history):
 # ==========================================
 # PHASE 2 : ASYNC LLM
 # ==========================================
+def mark_sentence_for_llm(sentence, target_word, occurrence=0):
+    tw = target_word.strip()
+    pattern = re.compile(rf"(?<!\S){re.escape(tw)}(?!\S)")
+    matches = list(pattern.finditer(sentence))
+    if matches:
+        m = matches[occurrence] if occurrence < len(matches) else matches[0]
+        return sentence[:m.start()] + f"<t> {tw} </t>" + sentence[m.end():]
+    if tw in sentence:
+        return sentence.replace(tw, f"<t> {tw} </t>", 1)
+    return f"{sentence} «{tw}»"
+
+
 async def call_llm(task, semaphore):
     async with semaphore:
         candidates_text = "\n".join(
             f"{i + 1}. {c}" for i, c in enumerate(task["subset_texts"]))
+        marked = mark_sentence_for_llm(task["sentence"], task["target_word"], task["base_entry"]["target_occurrence"])
         prompt = f"""You are an expert computational linguist specializing in Uyghur morphosyntax, Uyghur agglutinative morphology, and contextual disambiguation.
 
-Sentence: {task['sentence']}
-Target word: {task['target_word']}
+Sentence: {marked}
+Target word (marked with <t> ... </t>): {task['target_word']}
 
 Candidate analyses:
 {candidates_text}
