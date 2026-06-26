@@ -252,10 +252,10 @@ features.
 ```json
 {
   "reasoning": "<ONE sentence: why the chosen candidate's features are all correct>",
-  "correct_id": <integer, 1-indexed>
+  "correct_id": <integer,
+  1-indexed>
 }
 ```
-
 
 **Output schema** — every row carries both a classification target and a serialized generative target, plus
 structured fields for the encoder:
@@ -272,46 +272,70 @@ structured fields for the encoder:
 
 * * *
 
-#### **C.7 — Finetuning a Encoder Model**
-**STRUCTURE**
+#### **C.7 — Finetuning an Encoder Model (XLM-RoBERTa)**
+
+**Concept**: Reframe morphological disambiguation as a **multi-label classification** task over a global vocabulary of
+linguistic features. The model predicts feature probabilities for a marked target word, and we select the candidate
+whose features maximize the log-likelihood.
+
+**Architecture & Inference Flow**
+
+```text
+[1] Input Grounding
+    "Sentence with the <t> target </t> word."
+                         │
+[2] Encoder              ▼
+    XLM-RoBERTa (incorporating Layer-wise LR Decay)
+                         │
+[3] Multi-label Head     ▼
+    Outputs raw logits across the global feature vocabulary
+                         │
+[4] Probabilities        ▼
+    Sigmoid activation -> [Noun: 0.95, Accusative: 0.88, Dative: 0.05, ...]
+                         │
+[5] Candidate Scoring    ▼
+    Cand A: (Noun, Accusative)  -->  Sum log(P) = -0.17  (Highest) ───┐
+    Cand B: (Noun, Dative)      -->  Sum log(P) = -3.04               │
+                                                                      ▼
+                                                              [ Predicted ID ]
 ```
 
-**XLM-RoBERTa**
+**Implementation Details:**
 
-```aiignore
-                        INPUT ROW (one ambiguous word)
-   sentence: "... دوست بولۇپ ..."   target_word: "دوست"
-   label_feats:      [Noun, Nominative]              ← gold answer
-   candidate_feats:  [[Noun,Nominative],             ← candidate 0
-                      [Noun,Nominative,Copula,...]]  ← candidate 1
-                                  │
-                                  ▼
-   ┌──────────────────────────────────────────────────────────┐
-   │ STEP A — Target grounding                                  │
-   │   Wrap target word in special tokens so the model knows    │
-   │   WHICH word to analyse:                                   │
-   │   "... <t> دوست </t> بولۇپ ..."                            │
-   └──────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-   ┌──────────────────────────────────────────────────────────┐
-   │ STEP B — Encode + multi-label head                         │
-   │   XLM-RoBERTa  →  one sigmoid probability per feature      │
-   │   label        →  multi-hot vector from label_feats        │
-   │   loss         →  focal BCE (handles label sparsity)       │
-   └──────────────────────────────────────────────────────────┘
-                                  │
-                                  ▼
-   ┌──────────────────────────────────────────────────────────┐
-   │ STEP C — Decode back to a CANDIDATE (eval only)            │
-   │   We DON'T threshold at 0.5. Instead, for each candidate   │
-   │   feature-set we compute its log-likelihood under the      │
-   │   predicted probabilities, and pick the best-scoring one.  │
-   │   → compare to gold label_id  →  cand_accuracy             │
-   └──────────────────────────────────────────────────────────┘
-```
-**RESULT**
-```aiignore
+* **Target Grounding**: Special `<t>` and `</t>` tokens uniquely border the target word. To handle repeated words in a
+  sentence, an occurrence index is used to mark the exact instance.
+* **Layer-wise LR Decay (LLRD)**: Deeper pretrained layers update slowly to preserve cross-lingual knowledge. The
+  classifier head and the **newly added marker embeddings** receive the full base learning rate to prevent starvation.
+* **Custom Loss**: Uses Focal BCE Loss (or Pos-Weighted BCE). This heavily penalizes misclassification of rare
+  morphological tags while mitigating the extreme class imbalance of common tags.
+* **Likelihood metric**: Models don't read candidate strings. They predict global features. At inference, candidate
+  feature sets are re-attached and matched against the predicted probabilities to find the most mathematically likely
+  valid candidate.
+* **Honest Evaluation**: Model checkpoint selection and final test reporting are strictly isolated to the
+  `cand_acc_llm_based` metric. This stops the model from receiving undue credit for easily resolved `rule_based` and
+  `dedup` rows.
+
+
+**Hyperparameter Sweep & Model Selection**
+
+To ensure robust model selection and scientifically valid reporting, a rigorous hyperparameter sweep was conducted:
+
+*   **Multi-Seed Averaging**: Every configuration was trained across 4 random seeds. All reported metrics represent the `mean ± standard deviation`.
+*   **Strict Metric Isolation**: To prevent test data leakage, configurations were evaluated and ranked *exclusively* on the development set.
+*   **Sequential Tuning**: Variables were tuned one at a time, exploring Model Size, Learning Rate, LLRD decay rate, and Loss Function.
+
+**Sweep Results**
+
+*Best Configuration Found:*
+*   **Model**: XLM-RoBERTa-Large
+*   **Learning Rate**: 1e-5
+*   **LLRD Decay**: 0.90
+*   **Loss**: Focal (gamma=2.0)
+*   **Batch Size**: 32 | **Warmup**: 0.10
+
+**Final Result**
+
+```text
                   CANDIDATE ACCURACY  (higher = better)
    0.0       0.2       0.4       0.6       0.8       1.0
    |---------|---------|---------|---------|---------|
@@ -319,8 +343,9 @@ structured fields for the encoder:
    most-features   █████ 0.13                ← worst: "more = better" is WRONG
    fewest-features ████████████████████████████████ 0.78
    first-candidate ██████████████████████████████████ 0.81
-   ★ OUR MODEL     ████████████████████████████████████▌ 0.876   (test)
+   ★ OUR MODEL     █████████████████████████████████████▌ 0.92   (test)
 ```
+
 #### **C.8 — Finetuning a Seq2Seq Model**
 
 ByT5

@@ -19,34 +19,33 @@ HEADLINE = "eval_cand_acc_llm_based"
 
 os.makedirs(SWEEP_ROOT, exist_ok=True)
 
-# -----------------------------------------------------------------------------
+
 # Define experiments. Each entry is a name -> dict of CFG_* overrides.
-# Start with a baseline, then change ONE knob per experiment.
-# Comment out groups you are not running this session.
-# -----------------------------------------------------------------------------
+
 EXPERIMENTS = {}
 
 # ---- Group 0: model size baseline (large vs base) ----
-EXPERIMENTS["base_model_large"] = {"CFG_MODEL_NAME": "xlm-roberta-large"}
-EXPERIMENTS["base_model_base"]  = {"CFG_MODEL_NAME": "xlm-roberta-base"}
+# EXPERIMENTS["base_model_large"] = {"CFG_MODEL_NAME": "xlm-roberta-large"}     # = 0.7668 ± 0.1194
+# EXPERIMENTS["base_model_base"]  = {"CFG_MODEL_NAME": "xlm-roberta-base"}      # = 0.6458 ± 0.0008
 
-# ---- Group 1: learning rate (tune first, biggest effect) ----
-EXPERIMENTS["lr_7e6"] = {"CFG_LEARNING_RATE": "7e-6"}
+
+# ---- Group 1: learning rate ----
+EXPERIMENTS["lr_7e6"] = {"CFG_LEARNING_RATE": "7e-6"}       # 0.6985 ± 0.0901
 EXPERIMENTS["lr_1e5"] = {"CFG_LEARNING_RATE": "1e-5"}
 EXPERIMENTS["lr_2e5"] = {"CFG_LEARNING_RATE": "2e-5"}
 
-# ---- Group 2: LLRD decay (run after fixing best LR) ----
+# ---- Group 2: LLRD decay  ----
 # EXPERIMENTS["llrd_090"] = {"CFG_LLRD_DECAY": "0.9"}
 # EXPERIMENTS["llrd_095"] = {"CFG_LLRD_DECAY": "0.95"}
 # EXPERIMENTS["llrd_off"] = {"CFG_USE_LLRD": "false"}
 
-# ---- Group 3: loss (run after fixing LR + LLRD) ----
+# ---- Group 3: loss  ----
 # EXPERIMENTS["loss_focal"]    = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "false"}
 # EXPERIMENTS["loss_focal_pw"] = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "true"}
 # EXPERIMENTS["loss_weighted"] = {"CFG_LOSS_TYPE": "weighted"}
 # EXPERIMENTS["loss_bce"]      = {"CFG_LOSS_TYPE": "bce"}
 
-# ---- Group 4: batch size (gradient-noise regularization) ----
+# ---- Group 4: batch size ----
 # EXPERIMENTS["bs_16"] = {"CFG_TRAIN_BATCH_SIZE": "16"}
 # EXPERIMENTS["bs_32"] = {"CFG_TRAIN_BATCH_SIZE": "32"}
 
@@ -61,7 +60,7 @@ def run_one(exp_name, overrides, seed):
         with open(metrics_path) as f:
             return json.load(f)
 
-    env = os.environ.copy()
+    env = os.environ
     env.update(overrides)
     env["CFG_SEED"]       = str(seed)
     env["CFG_OUTPUT_DIR"] = out_dir
