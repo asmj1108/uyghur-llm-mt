@@ -252,8 +252,7 @@ features.
 ```json
 {
   "reasoning": "<ONE sentence: why the chosen candidate's features are all correct>",
-  "correct_id": <integer,
-  1-indexed>
+  "correct_id": <integer, 1-indexed>
 }
 ```
 
@@ -328,6 +327,7 @@ To ensure robust model selection and scientifically valid reporting, a rigorous 
 
 *Best Configuration Found:*
 *   **Model**: XLM-RoBERTa-Large
+*   **Batch Size**: 16 (gave similar mean with much lower variance vs. 32)
 *   **Learning Rate**: 1e-5
 *   **LLRD Decay**: 0.90
 *   **Loss**: Focal (gamma=2.0)

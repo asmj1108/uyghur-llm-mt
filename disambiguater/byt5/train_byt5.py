@@ -20,7 +20,7 @@ from transformers import (
 # =============================================================================
 # CONFIG
 # =============================================================================
-MODEL_NAME = "google/byt5-base"
+MODEL_NAME = "google/byt5-small"
 TRAIN_FILE = "train.jsonl"
 DEV_FILE = "dev.jsonl"
 TEST_FILE = "test.jsonl"
@@ -181,7 +181,13 @@ def make_compute_metrics(tokenizer, gold_cand_idx, sources, num_cands):
         if isinstance(preds, tuple):
             preds = preds[0]
         preds = np.where(preds < 0, pad_id, preds)  # scrub -100 / negatives
-        texts = tokenizer.batch_decode(preds, skip_special_tokens=True)
+
+        # FAST DECODING WORKAROUND
+        texts = tokenizer.batch_decode(preds, skip_special_tokens=False)
+        texts = [
+            t.replace(tokenizer.pad_token, "").replace(tokenizer.eos_token, "").strip()
+            for t in texts
+        ]
 
         correct = evaluable = strict_fail = oob = 0
         per_src = defaultdict(lambda: [0, 0])

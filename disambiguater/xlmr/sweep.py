@@ -13,12 +13,11 @@ import statistics
 from datetime import datetime
 
 TRAIN_SCRIPT = "train_xlmr.py"
-SWEEP_ROOT   = "sweeps"
-SEEDS        = [42, 1, 2, 3]
+SWEEP_ROOT = "sweeps"
+SEEDS = [42, 1, 2, 3]
 HEADLINE = "eval_cand_acc_llm_based"
 
 os.makedirs(SWEEP_ROOT, exist_ok=True)
-
 
 # Define experiments. Each entry is a name -> dict of CFG_* overrides.
 
@@ -30,29 +29,30 @@ EXPERIMENTS = {}
 
 
 # ---- Group 1: learning rate ----
-EXPERIMENTS["lr_7e6"] = {"CFG_LEARNING_RATE": "7e-6"}       # 0.6985 ± 0.0901
-EXPERIMENTS["lr_1e5"] = {"CFG_LEARNING_RATE": "1e-5"}
-EXPERIMENTS["lr_2e5"] = {"CFG_LEARNING_RATE": "2e-5"}
+EXPERIMENTS["lr_7e6"] = {"CFG_LEARNING_RATE": "7e-6"}  # 0.6985 ± 0.0901
+EXPERIMENTS["lr_1e5"] = {"CFG_LEARNING_RATE": "1e-5"}  # 0.7442 ± 0.1196
+EXPERIMENTS["lr_2e5"] = {"CFG_LEARNING_RATE": "2e-5"}  # 0.6937 ± 0.1040
 
 # ---- Group 2: LLRD decay  ----
-# EXPERIMENTS["llrd_090"] = {"CFG_LLRD_DECAY": "0.9"}
-# EXPERIMENTS["llrd_095"] = {"CFG_LLRD_DECAY": "0.95"}
-# EXPERIMENTS["llrd_off"] = {"CFG_USE_LLRD": "false"}
+# EXPERIMENTS["llrd_090"] = {"CFG_LLRD_DECAY": "0.9"}       # 0.7609 + 0.1134
+# EXPERIMENTS["llrd_095"] = {"CFG_LLRD_DECAY": "0.95"}      # 0.7728 + 0.1253
+# EXPERIMENTS["llrd_off"] = {"CFG_USE_LLRD": "false"}       # 0.7748 + 0.1254
 
 # ---- Group 3: loss  ----
-# EXPERIMENTS["loss_focal"]    = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "false"}
-# EXPERIMENTS["loss_focal_pw"] = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "true"}
-# EXPERIMENTS["loss_weighted"] = {"CFG_LOSS_TYPE": "weighted"}
-# EXPERIMENTS["loss_bce"]      = {"CFG_LOSS_TYPE": "bce"}
+# EXPERIMENTS["loss_focal"]    = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "false"}    # 0.7748 + 0.1254
+# EXPERIMENTS["loss_focal_pw"] = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "true"}     # 0.7743 + 0.1311
+# EXPERIMENTS["loss_weighted"] = {"CFG_LOSS_TYPE": "weighted"}                                      # 0.7470 + 0.1328
+# EXPERIMENTS["loss_bce"]      = {"CFG_LOSS_TYPE": "bce"}                                           # 0.6317 + 0.0182
 
 # ---- Group 4: batch size ----
-# EXPERIMENTS["bs_16"] = {"CFG_TRAIN_BATCH_SIZE": "16"}
+EXPERIMENTS["bs_16"] = {"CFG_TRAIN_BATCH_SIZE": "16",
+                        'CFG_EVAL_STEPS': '100', 'CFG_SAVE_STEPS': '100'}   #0.8995 ± 0.0027 - focal w/ pos, llrd off
 # EXPERIMENTS["bs_32"] = {"CFG_TRAIN_BATCH_SIZE": "32"}
 
 
 def run_one(exp_name, overrides, seed):
     run_name = f"{exp_name}__seed{seed}"
-    out_dir  = os.path.join(SWEEP_ROOT, run_name)
+    out_dir = os.path.join(SWEEP_ROOT, run_name)
     metrics_path = os.path.join(out_dir, "run_metrics.json")
 
     # resume: skip if already finished
@@ -62,7 +62,7 @@ def run_one(exp_name, overrides, seed):
 
     env = os.environ
     env.update(overrides)
-    env["CFG_SEED"]       = str(seed)
+    env["CFG_SEED"] = str(seed)
     env["CFG_OUTPUT_DIR"] = out_dir
     os.makedirs(out_dir, exist_ok=True)
 
@@ -99,17 +99,17 @@ def main():
             scores.append(val)
             per_seed[seed] = {
                 HEADLINE: val,
-                "eval_cand_accuracy":       metrics.get("eval_cand_accuracy"),
+                "eval_cand_accuracy": metrics.get("eval_cand_accuracy"),
                 "eval_cand_acc_rule_based": metrics.get("eval_cand_acc_rule_based"),
-                "eval_cand_acc_dedup":      metrics.get("eval_cand_acc_dedup"),
-                "test_cand_acc_llm_based":  metrics.get("test_cand_acc_llm_based"),
-                "test_cand_accuracy":     metrics.get("test_cand_accuracy"),
+                "eval_cand_acc_dedup": metrics.get("eval_cand_acc_dedup"),
+                "test_cand_acc_llm_based": metrics.get("test_cand_acc_llm_based"),
+                "test_cand_accuracy": metrics.get("test_cand_accuracy"),
                 "test_cand_acc_rule_based": metrics.get("test_cand_acc_rule_based"),
-                "test_cand_acc_dedup":      metrics.get("test_cand_acc_dedup"),
+                "test_cand_acc_dedup": metrics.get("test_cand_acc_dedup"),
             }
         if scores:
             mean = statistics.mean(scores)
-            std  = statistics.pstdev(scores) if len(scores) > 1 else 0.0
+            std = statistics.pstdev(scores) if len(scores) > 1 else 0.0
             print(f"  → {HEADLINE}: {mean:.4f} ± {std:.4f}  (n={len(scores)})")
             summary.append({
                 "experiment": exp_name, "overrides": overrides,
