@@ -90,12 +90,22 @@ For every word in UyUDT with > 1 Apertium reading after CG:
     2. Co-occurrence frequency of the token's DEPREL with each FEAT value (from `uig-feat-rel.tsv`)
 - Select highest-scoring reading
 
-**Limitations**:
+**Evaluation against Pseudo-Gold Labels**:
+To quantify the effectiveness of this legacy heuristic, we evaluated its predictions against our newly constructed
+LLM-generated pseudo-gold dataset across the identical overlapping tokens.
 
-- Statistical heuristic — origin of frequency counts in [`uig-feat-rel.tsv`](apertium-uig/texts/uig-feat-rel.tsv) is
-  unknown
-- Not linguistically/grammatically motivated
-- Sub-optimal as a general solution
+- **Total overlap words tested**: 15,446
+- **Agreement rate**: 72.71% (11,231 matches)
+- *(Note: Neither source is manually verified gold, but this tests the statistical heuristic against the LLM's semantic
+  reasoning).*
+
+**Limitations & Conclusion**:
+
+- Statistical heuristic — origin of frequency counts in `uig-feat-rel.tsv` is unknown.
+- Not linguistically/grammatically motivated (relies on superficial tag overlap).
+- **Conclusion**: While an ~73% agreement shows the legacy heuristic was a reasonable stopgap, an almost 30%
+  disagreement rate alongside the method's reliance on oracle UPOS/treebank data at inference time makes it unsuitable
+  for a raw text translation pipeline. This validates the shift to our context-aware, LLM-backed hybrid approach.
 
 #### Approach C: Disambiguate using LLM
 
@@ -249,7 +259,7 @@ features.
 
 **LLM response format**:
 
-```json
+```text
 {
   "reasoning": "<ONE sentence: why the chosen candidate's features are all correct>",
   "correct_id": <integer, 1-indexed>
@@ -266,12 +276,34 @@ structured fields for the encoder:
 | `candidate_feats`, `label_feats` | canonical feature-label lists (target lemma omitted; enclitics kept as one atomic label) → **encoder** multi-label |
 | `label_id`                       | gold index into candidates                                                                                         |
 | `reasoning`                      | rationale (LLM-generated, or deterministic for rule/dedup rows)                                                    |
-| `target_text`                    | `"REASON: <rationale>`                                                                                             | ANSWER: <id>"` → **decoder** target |
+| `target_text`                    | `"REASON: <rationale>`  \| ANSWER: <id>"` → **decoder** target                                                     |
 | `source`                         | `dedup` \| `rule_based` \| `llm_based` (enables filtering to pure distillation)                                    |
 
 * * *
 
-#### **C.7 — Finetuning an Encoder Model (XLM-RoBERTa)**
+#### **C.7 — Finetuning a Model**
+
+Model-free baseline:
+
+```text
+  dev (n=1505 evaluable):
+    random_expected   : 0.4136
+    random_sampled    : 0.4133
+    most_features     : 0.1488
+    fewest_features   : 0.7342
+    first             : 0.7807
+
+  test (n=1447 evaluable):
+    random_expected   : 0.4051
+    random_sampled    : 0.4043
+    most_features     : 0.1368
+    fewest_features   : 0.7326
+    first             : 0.7657
+```
+
+Since the positional bias is very high, we
+
+##### C7.1 — Encoder Model: XLM-RoBERTa
 
 **Concept**: Reframe morphological disambiguation as a **multi-label classification** task over a global vocabulary of
 linguistic features. The model predicts feature probabilities for a marked target word, and we select the candidate
@@ -314,24 +346,27 @@ whose features maximize the log-likelihood.
   `cand_acc_llm_based` metric. This stops the model from receiving undue credit for easily resolved `rule_based` and
   `dedup` rows.
 
-
 **Hyperparameter Sweep & Model Selection**
 
 To ensure robust model selection and scientifically valid reporting, a rigorous hyperparameter sweep was conducted:
 
-*   **Multi-Seed Averaging**: Every configuration was trained across 4 random seeds. All reported metrics represent the `mean ± standard deviation`.
-*   **Strict Metric Isolation**: To prevent test data leakage, configurations were evaluated and ranked *exclusively* on the development set.
-*   **Sequential Tuning**: Variables were tuned one at a time, exploring Model Size, Learning Rate, LLRD decay rate, and Loss Function.
+* **Multi-Seed Averaging**: Every configuration was trained across 4 random seeds. All reported metrics represent the
+  `mean ± standard deviation`.
+* **Strict Metric Isolation**: To prevent test data leakage, configurations were evaluated and ranked *exclusively* on
+  the development set.
+* **Sequential Tuning**: Variables were tuned one at a time, exploring Model Size, Learning Rate, LLRD decay rate, and
+  Loss Function.
 
 **Sweep Results**
 
 *Best Configuration Found:*
-*   **Model**: XLM-RoBERTa-Large
-*   **Batch Size**: 16 (gave similar mean with much lower variance vs. 32)
-*   **Learning Rate**: 1e-5
-*   **LLRD Decay**: 0.90
-*   **Loss**: Focal (gamma=2.0)
-*   **Batch Size**: 32 | **Warmup**: 0.10
+
+* **Model**: XLM-RoBERTa-Large
+* **Batch Size**: 16 (gave similar mean with much lower variance vs. 32)
+* **Learning Rate**: 1e-5
+* **LLRD Decay**: off
+* **Loss**: Focal (gamma=2.0)
+* **Warmup**: 0.10
 
 **Final Result**
 
@@ -346,33 +381,29 @@ To ensure robust model selection and scientifically valid reporting, a rigorous 
    ★ OUR MODEL     █████████████████████████████████████▌ 0.92   (test)
 ```
 
-#### **C.8 — Finetuning a Seq2Seq Model**
+#### **C.8 — Finetuning a Seq2Seq Model - ByT5**
 
-ByT5
+**Answer-Only Baseline**:
 
-📊 BASELINES on test.jsonl  (n=1404)
 
-first           : 0.8077
-random          : 0.3996
-most-features   : 0.1147
-fewest-features : 0.7721
 
 ---
 
 ### 3. Dictionary Lookup
 
 - No publicly available, electronic Uyghur–English dictionary published in the last ~30 years
-- **TODO**: Explore alternative approaches to construct a word list or dictionary suitable for this pipeline
+- **TODO**: word-alignment methode to create a dict
 
 ---
 
 ## Key Resources
 
-| Resource           | Description                                                              | Link/Path                                                                                        |
-|--------------------|--------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
-| MUDT               | Modern Uyghur Dependency Treebank + DiaParser training script            | [GitHub](https://github.com/wyqmath/MUDT)                                                        |
-| apertium-uig       | Morphological analyser + CG tagger for Uyghur                            | [GitHub](https://github.com/apertium/apertium-uig)                                               |
-| UyUDT              | Uyghur UD Treebank (CoNLL-U)                                             | [GitHub](https://github.com/UniversalDependencies/UD_Uyghur-UDT)                                 |
-| `conllu-morph.py`  | FEATS assignment via DEPREL-based scoring (used to generate UyUDT FEATS) | [`ud-scripts/conllu-morph.py`](https://github.com/ftyers/ud-scripts/blob/master/conllu-morph.py) |
-| `uig-feats.tsv`    | Mapping: Apertium tags → UD features                                     | [`uig-feats.tsv`](apertium-uig/texts/uig-feats.tsv)                                              |
-| `uig-feat-rel.tsv` | DEPREL–FEAT co-occurrence frequencies                                    | [`uig-feat-rel.tsv`](apertium-uig/texts/uig-feat-rel.tsv)                                        |
+| Resource           | Description                                                                | Link/Path                                                                                        |
+|--------------------|----------------------------------------------------------------------------|--------------------------------------------------------------------------------------------------|
+| MUDT               | Modern Uyghur Dependency Treebank + DiaParser training script              | [GitHub](https://github.com/wyqmath/MUDT)                                                        |
+| apertium-uig       | Morphological analyser + CG tagger for Uyghur                              | [GitHub](https://github.com/apertium/apertium-uig)                                               |
+| UyUDT              | Uyghur UD Treebank (CoNLL-U)                                               | [GitHub](https://github.com/UniversalDependencies/UD_Uyghur-UDT)                                 |
+| `conllu-morph.py`  | FEATS assignment via DEPREL-based scoring (used to generate UyUDT FEATS)   | [`ud-scripts/conllu-morph.py`](https://github.com/ftyers/ud-scripts/blob/master/conllu-morph.py) |
+| `uig-feats.tsv`    | Mapping: Apertium tags → UD features                                       | [`uig-feats.tsv`](apertium-uig/texts/uig-feats.tsv)                                              |
+| `uig-feat-rel.tsv` | DEPREL–FEAT co-occurrence frequencies                                      | [`uig-feat-rel.tsv`](apertium-uig/texts/uig-feat-rel.tsv)                                        |
+| `build_dataset.py` | Creates the dataset used for finetuning models for the disambiguation task | [`build_dataset.py`](disambiguater/build_dataset.py)                                             |

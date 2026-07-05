@@ -46,7 +46,7 @@ USE_TARGET_MARKERS = True
 T_OPEN, T_CLOSE = "<t>", "</t>"
 
 NUM_EPOCHS = _env("CFG_NUM_EPOCHS", 15, int)
-TRAIN_BATCH_SIZE = _env("CFG_TRAIN_BATCH_SIZE", 32, int)
+TRAIN_BATCH_SIZE = _env("CFG_TRAIN_BATCH_SIZE", 16, int)
 EVAL_BATCH_SIZE = _env("CFG_EVAL_BATCH_SIZE", 128, int)
 GRAD_ACCUM_STEPS = _env("CFG_GRAD_ACCUM_STEPS", 1, int)
 LEARNING_RATE = _env("CFG_LEARNING_RATE", 1e-5, float)
@@ -58,10 +58,10 @@ GRAD_CHECKPOINTING = _env("CFG_GRAD_CHECKPOINTING", False, bool)
 USE_LLRD = _env("CFG_USE_LLRD", False, bool)
 LLRD_DECAY = _env("CFG_LLRD_DECAY", 0.95, float)
 
-EVAL_STEPS = _env("CFG_EVAL_STEPS", 50, int)
-SAVE_STEPS = _env("CFG_SAVE_STEPS", 50, int)
+EVAL_STEPS = _env("CFG_EVAL_STEPS", 100, int)
+SAVE_STEPS = _env("CFG_SAVE_STEPS", 100, int)
 EARLY_STOPPING_PATIENCE = _env("CFG_EARLY_STOPPING_PATIENCE", 8, int)
-METRIC_FOR_BEST = _env("CFG_METRIC_FOR_BEST", "cand_acc_llm_based")
+METRIC_FOR_BEST = "cand_acc_llm_based"
 GREATER_IS_BETTER = True
 
 # ---- Loss for label imbalance ----

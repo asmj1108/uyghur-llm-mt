@@ -20,11 +20,22 @@ from transformers import (
 # =============================================================================
 # CONFIG
 # =============================================================================
-MODEL_NAME = "google/byt5-small"
+def _env(key, default, cast=str):
+    v = os.environ.get(key)
+    if v is None:
+        return default
+    if cast is bool:
+        return v.lower() in ("1", "true", "yes")
+    return cast(v)
+
+
+# Options: "cot" | "direct" | "multitask"
+TRAIN_MODE = _env("CFG_TRAIN_MODE", "cot")
+MODEL_NAME = _env("CFG_MODEL_NAME", "google/byt5-base")
 TRAIN_FILE = "train.jsonl"
 DEV_FILE = "dev.jsonl"
 TEST_FILE = "test.jsonl"
-OUTPUT_DIR = "byt5-uyghur-morph-v1"
+OUTPUT_DIR = _env("CFG_OUTPUT_DIR", MODEL_NAME + TRAIN_MODE)
 
 SHUFFLE_CANDIDATES = True
 
@@ -32,27 +43,28 @@ SEED = 42
 
 # ---- Lengths (BYTE-LEVEL): SET THESE FROM THE INSPECTION PASS (see notes) ----
 MAX_SOURCE_LENGTH = 2560
-MAX_TARGET_LENGTH = 448
+MAX_TARGET_LENGTH = 448 if TRAIN_MODE != "direct" else 16
 
 # ---- Target-word grounding ----
 USE_TARGET_MARKERS = True
 T_OPEN, T_CLOSE = "<t>", "</t>"
 
 # ---- Hyperparameters ----
-NUM_EPOCHS = 20
-TRAIN_BATCH_SIZE = 8
-EVAL_BATCH_SIZE = 32
-GRAD_ACCUM_STEPS = 1
-LEARNING_RATE = 3e-4  # T5 family likes higher LR than RoBERTa
-WEIGHT_DECAY = 0.0
-WARMUP_RATIO = 0.06
+NUM_EPOCHS = _env("CFG_NUM_EPOCHS", 20, int)
+TRAIN_BATCH_SIZE = _env("CFG_TRAIN_BATCH_SIZE", 4, int)
+EVAL_BATCH_SIZE = _env("CFG_EVAL_BATCH_SIZE", 32, int)
+GRAD_ACCUM_STEPS = _env("CFG_GRAD_ACCUM_STEPS", 1, int)
+LEARNING_RATE = _env("CFG_LEARNING_RATE", 3e-4, float)
+WEIGHT_DECAY = _env("CFG_WEIGHT_DECAY", 0.0, float)
+WARMUP_RATIO = _env("CFG_WARMUP_RATIO", 0.06, float)
+
 LABEL_SMOOTHING = 0.0
 GRAD_CHECKPOINTING = False  # set True if byt5-base/large OOMs
 
 # ---- Eval / generation / early stopping ----
-EVAL_STEPS = 700
-SAVE_STEPS = 700
-EARLY_STOPPING_PATIENCE = 6
+EVAL_STEPS = _env("CFG_EVAL_STEPS", 700, int)
+SAVE_STEPS = _env("CFG_SAVE_STEPS", 700, int)
+EARLY_STOPPING_PATIENCE = _env("CFG_EARLY_STOPPING_PATIENCE", 6, int)
 METRIC_FOR_BEST = "cand_acc_llm_based"
 GREATER_IS_BETTER = True
 GEN_NUM_BEAMS = 1  # greedy: deterministic + fast
@@ -149,12 +161,29 @@ class Seq2SeqMorphDataset(torch.utils.data.Dataset):
         shuffled = [r["candidates"][p] for p in perm]
         gold = int(r.get("label_id", -1))
         new_gold = perm.index(gold) if gold in perm else gold
-        target_text = f"REASON: {r.get('reasoning', '')} | ANSWER: {new_gold + 1}"
 
-        enc = self.tokenizer(build_prompt(r, shuffled),
-                             max_length=self.max_source, truncation=True)
-        labels = self.tokenizer(text_target=target_text,
-                                max_length=self.max_target, truncation=True)
+        # TRAIN MODE LOGIC
+        input_text = build_prompt(r, shuffled)
+        reasoning = r.get('reasoning', '')
+        if TRAIN_MODE == "cot":
+            target_text = f"REASON: {reasoning} | ANSWER: {new_gold + 1}"
+        elif TRAIN_MODE == "direct":
+            target_text = f"ANSWER: {new_gold + 1}"
+        elif TRAIN_MODE == "multitask":
+            if self.fixed_shuffle:  # (Using fixed_shuffle as a proxy for Eval/Test set)
+                input_text = "[Direct Answer] " + input_text
+                target_text = f"ANSWER: {new_gold + 1}"
+            else:
+                # During training, randomly alternate between the two modes
+                if _random.random() < 0.5:
+                    input_text = "[Reasoning] " + input_text
+                    target_text = f"REASON: {reasoning} | ANSWER: {new_gold + 1}"
+                else:
+                    input_text = "[Direct Answer] " + input_text
+                    target_text = f"ANSWER: {new_gold + 1}"
+
+        enc = self.tokenizer(input_text, max_length=self.max_source, truncation=True)
+        labels = self.tokenizer(text_target=target_text, max_length=self.max_target, truncation=True)
         enc["labels"] = labels["input_ids"]
         return enc
 
@@ -233,7 +262,7 @@ def truncation_report(rows, max_source, max_target):
     src_trunc = tgt_trunc = ans_lost = 0
     for r in rows:
         s = len(build_prompt(r, r["candidates"]).encode("utf-8")) + 1
-        t = len(r["target_text"].encode("utf-8")) + 1
+        t = len(r["target_text"].encode("utf-8")) + 1 if TRAIN_MODE != "direct" else 11
         if s > max_source:
             src_trunc += 1
         if t > max_target:  # ANSWER is at the END → truncation kills it

@@ -24,29 +24,30 @@ os.makedirs(SWEEP_ROOT, exist_ok=True)
 EXPERIMENTS = {}
 
 # ---- Group 0: model size baseline (large vs base) ----
-# EXPERIMENTS["base_model_large"] = {"CFG_MODEL_NAME": "xlm-roberta-large"}     # = 0.7668 ± 0.1194
-# EXPERIMENTS["base_model_base"]  = {"CFG_MODEL_NAME": "xlm-roberta-base"}      # = 0.6458 ± 0.0008
-
+# EXPERIMENTS["base_model_large"] = {"CFG_MODEL_NAME": "xlm-roberta-large"}
+# EXPERIMENTS["base_model_base"]  = {"CFG_MODEL_NAME": "xlm-roberta-base"}
 
 # ---- Group 1: learning rate ----
-EXPERIMENTS["lr_7e6"] = {"CFG_LEARNING_RATE": "7e-6"}  # 0.6985 ± 0.0901
-EXPERIMENTS["lr_1e5"] = {"CFG_LEARNING_RATE": "1e-5"}  # 0.7442 ± 0.1196
-EXPERIMENTS["lr_2e5"] = {"CFG_LEARNING_RATE": "2e-5"}  # 0.6937 ± 0.1040
+# EXPERIMENTS["lr_7e6"] = {"CFG_LEARNING_RATE": "7e-6"}
+# EXPERIMENTS["lr_1e5"] = {"CFG_LEARNING_RATE": "1e-5"}
+# EXPERIMENTS["lr_2e5"] = {"CFG_LEARNING_RATE": "2e-5"}
+# EXPERIMENTS["wr_0.05"] = {"CFG_WARMUP_RATIO": "0.05"}
+# EXPERIMENTS["wr_0.15"] = {"CFG_WARMUP_RATIO": "0.15"}
+# EXPERIMENTS["wr_0.2"] = {"CFG_WARMUP_RATIO": "0.2"}
 
 # ---- Group 2: LLRD decay  ----
-# EXPERIMENTS["llrd_090"] = {"CFG_LLRD_DECAY": "0.9"}       # 0.7609 + 0.1134
-# EXPERIMENTS["llrd_095"] = {"CFG_LLRD_DECAY": "0.95"}      # 0.7728 + 0.1253
-# EXPERIMENTS["llrd_off"] = {"CFG_USE_LLRD": "false"}       # 0.7748 + 0.1254
+# EXPERIMENTS["llrd_090"] = {"CFG_LLRD_DECAY": "0.9"}       
+# EXPERIMENTS["llrd_095"] = {"CFG_LLRD_DECAY": "0.95"}      
+# EXPERIMENTS["llrd_off"] = {"CFG_USE_LLRD": "false"}       
 
 # ---- Group 3: loss  ----
-# EXPERIMENTS["loss_focal"]    = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "false"}    # 0.7748 + 0.1254
-# EXPERIMENTS["loss_focal_pw"] = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "true"}     # 0.7743 + 0.1311
-# EXPERIMENTS["loss_weighted"] = {"CFG_LOSS_TYPE": "weighted"}                                      # 0.7470 + 0.1328
-# EXPERIMENTS["loss_bce"]      = {"CFG_LOSS_TYPE": "bce"}                                           # 0.6317 + 0.0182
+# EXPERIMENTS["loss_focal"]    = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "false"}    
+# EXPERIMENTS["loss_focal_pw"] = {"CFG_LOSS_TYPE": "focal", "CFG_FOCAL_USE_POS_WEIGHT": "true"}     
+# EXPERIMENTS["loss_weighted"] = {"CFG_LOSS_TYPE": "weighted"}                                      
+# EXPERIMENTS["loss_bce"]      = {"CFG_LOSS_TYPE": "bce"}                                           
 
 # ---- Group 4: batch size ----
-EXPERIMENTS["bs_16"] = {"CFG_TRAIN_BATCH_SIZE": "16",
-                        'CFG_EVAL_STEPS': '100', 'CFG_SAVE_STEPS': '100'}   #0.8995 ± 0.0027 - focal w/ pos, llrd off
+# EXPERIMENTS["bs_16"] = {"CFG_TRAIN_BATCH_SIZE": "16", 'CFG_EVAL_STEPS': '100', 'CFG_SAVE_STEPS': '100'}
 # EXPERIMENTS["bs_32"] = {"CFG_TRAIN_BATCH_SIZE": "32"}
 
 
