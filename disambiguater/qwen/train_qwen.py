@@ -146,7 +146,6 @@ def apply_user_template(tokenizer, content):
     """Render to string first to avoid C++ object bleed, then tokenize. Thinking Mode disabled on default"""
     msgs = [{"role": "user", "content": content}]
     return tokenizer.apply_chat_template(msgs, tokenize=True, add_generation_prompt=True)["input_ids"]
-    # return tokenizer(rendered_str, add_special_tokens=False)["input_ids"]
 
 
 # =============================================================================
@@ -353,12 +352,16 @@ class CausalGenTrainer(Trainer):
     def evaluation_loop(self, *args, **kwargs):
         m = self.model
         orig_impl, orig_cache = m.config._attn_implementation, m.config.use_cache
-        m.set_attn_implementation("sdpa")   # FA2 needs fp16/bf16; eval runs fp32
+        # FA2 needs fp16/bf16; eval runs fp32 for cot mode
+        change_attn_impl = (m.dtype == torch.float32 and orig_impl == "flash_attention_2")
+        if change_attn_impl:
+            m.set_attn_implementation("sdpa")
         m.config.use_cache = True
         try:
             return super().evaluation_loop(*args, **kwargs)
         finally:
-            m.set_attn_implementation(orig_impl)
+            if change_attn_impl:
+                m.set_attn_implementation(orig_impl)
             m.config.use_cache = orig_cache
 
     def prediction_step(self, model, inputs, prediction_loss_only, ignore_keys=None):
@@ -452,7 +455,7 @@ def main():
         dtype=_weight_dtype,
         attn_implementation="flash_attention_2" if USE_PACKING else "sdpa",
     )
-    print("Model weight loaded in ", str(_weight_dtype))
+    print("Model weight natively loaded in ", str(_weight_dtype))
 
     if GRAD_CHECKPOINTING:
         model.gradient_checkpointing_enable()
@@ -460,8 +463,8 @@ def main():
 
     if USE_PACKING:
         train_collator = DataCollatorWithFlattening(
-            return_flash_attn_kwargs=True,   # cu_seq_lens_q/k, max_length_q/k -> FLA + FA2
-            return_seq_idx=True,             # seq_idx -> causal conv1d
+            return_flash_attn_kwargs=True,  # cu_seq_lens_q/k, max_length_q/k -> FLA + FA2
+            return_seq_idx=True,  # seq_idx -> causal conv1d
         )
     else:
         # right-padding fallback
@@ -492,7 +495,7 @@ def main():
         fp16=False,
         gradient_checkpointing=GRAD_CHECKPOINTING,
         report_to="none",
-        remove_unused_columns=False, # just to be safe
+        remove_unused_columns=False,  # just to be safe
     )
 
     dev_metrics_fn = make_compute_metrics(
