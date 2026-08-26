@@ -347,14 +347,16 @@ def insert_entry(conn: sqlite3.Connection, entry: Dict[str, Any]) -> int:
     return entry_id
 
 
-def save_dictionary_to_db_and_json(
+def save_dictionary_to_db_and_jsonl(
     entries: List[Dict[str, Any]],
     db_path: str = "uyghur_english_dictionary.sqlite",
-    json_path: str = "uyghur_english_dictionary.json"
+    jsonl_path: str = "uyghur_english_dictionary.jsonl"
 ):
-    """Save a list of parsed entries to both SQLite database and JSON file."""
-    with open(json_path, 'w', encoding='utf-8') as f:
-        json.dump(entries, f, indent=2, ensure_ascii=False)
+    """Save a list of parsed entries to both SQLite database and JSONL file."""
+    with open(jsonl_path, 'w', encoding='utf-8') as f:
+        for entry in entries:
+            json.dump(entry, f, ensure_ascii=False)
+            f.write('\n')
 
     conn = create_database(db_path)
     for entry in entries:

@@ -5,11 +5,13 @@ and unsharp masking for enhanced diacritic recognition.
 """
 
 import os
+from concurrent.futures import ProcessPoolExecutor
 from typing import Tuple, List, Dict, Any, Optional
 import fitz
 from PIL import Image, ImageFilter, ImageEnhance
 import cv2
 import numpy as np
+from tqdm import tqdm
 
 def detect_column_gutter(img_bgr: np.ndarray, y_top: int, y_bot: int) -> int:
     """Find the exact x coordinate of the vertical gutter between Column 1 and Column 2."""
@@ -162,3 +164,78 @@ def crop_page_columns(page: fitz.Page, output_dir: str, page_num: int, dpi: int 
         "is_section_start": layout["is_section_start"],
         "illustrations": layout["illustrations"]
     }
+
+
+def crop_single_page(
+    pdf_path: str,
+    page_num: int,
+    output_dir: str = "crops",
+    dpi: int = 300,
+    overwrite: bool = False
+) -> Dict[str, Any]:
+    """Crop Column 1 and Column 2 of a PDF page by page number.
+    
+    If overwrite is False and both cropped PNGs already exist on disk,
+    returns the paths immediately without re-rendering.
+    """
+    col1_path = os.path.join(output_dir, f"page_{page_num}_col1.png")
+    col2_path = os.path.join(output_dir, f"page_{page_num}_col2.png")
+
+    if not overwrite and os.path.exists(col1_path) and os.path.exists(col2_path):
+        return {
+            "page_pdf": page_num,
+            "page_book": page_num - 25,
+            "col1_path": col1_path,
+            "col2_path": col2_path,
+            "cached": True
+        }
+
+    doc = fitz.open(pdf_path)
+    try:
+        page = doc[page_num - 1]
+        result = crop_page_columns(page, output_dir, page_num, dpi=dpi)
+        result["cached"] = False
+        return result
+    finally:
+        doc.close()
+
+
+def _crop_worker(args: Tuple[str, int, str, int, bool]) -> Dict[str, Any]:
+    """Helper worker for multiprocessing pool."""
+    pdf_path, p_num, output_dir, dpi, overwrite = args
+    return crop_single_page(pdf_path, p_num, output_dir=output_dir, dpi=dpi, overwrite=overwrite)
+
+
+def batch_crop_pages(
+    pdf_path: str = "An_Uyghur_English_Dictionary_Complete.pdf",
+    start_page_pdf: int = 26,
+    end_page_pdf: int = 972,
+    output_dir: str = "crops",
+    dpi: int = 300,
+    max_workers: int = 4,
+    overwrite: bool = False,
+    show_progress: bool = True
+) -> List[Dict[str, Any]]:
+    """Batch crop pages in parallel with progress tracking."""
+    os.makedirs(output_dir, exist_ok=True)
+    page_nums = list(range(start_page_pdf, end_page_pdf + 1))
+    tasks = [(pdf_path, p, output_dir, dpi, overwrite) for p in page_nums]
+
+    results: List[Dict[str, Any]] = []
+    if max_workers <= 1:
+        iterable = (_crop_worker(t) for t in tasks)
+        if show_progress:
+            iterable = tqdm(iterable, total=len(tasks), desc="Cropping pages")
+        results = list(iterable)
+    else:
+        with ProcessPoolExecutor(max_workers=max_workers) as executor:
+            if show_progress:
+                results = list(tqdm(
+                    executor.map(_crop_worker, tasks),
+                    total=len(tasks),
+                    desc=f"Cropping pages ({max_workers} workers)"
+                ))
+            else:
+                results = list(executor.map(_crop_worker, tasks))
+
+    return results

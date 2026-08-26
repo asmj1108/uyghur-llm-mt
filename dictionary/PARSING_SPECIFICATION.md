@@ -20,7 +20,7 @@ The parser transforms unstructured, markdown-formatted column transcriptions pro
 - Column continuations prefixed with `[CONTINUATION]`.
 
 ### Output Target
-- High-fidelity JSON dataset matching the canonical digital schema.
+- High-fidelity JSONL dataset matching the canonical digital schema.
 - Normalized SQLite relational database with an FTS5 full-text index across Uyghur Arabic (UEY), standard Latin (ULY), Schwarz Latin, and English definitions.
 
 ---
@@ -133,10 +133,10 @@ The parsing pipeline in `parser.py` operates through distinct modular stages:
   Removes markdown formatting and normalizes Schwarz diacritics (`g̃`, `ñ`, `ⱬ`, `ä`, `ö`, `ü`, `ç`, `ş`).
 
 ### 4.2. Multipage & Column Continuity
+- **Continuation Tags & Leading Bodies**:
+  When an entry's body continues onto the subsequent column or page (either tagged with `[CONTINUATION]` or as text preceding the first bold headword), `parser.parse_column_transcription` extracts it as `leading_continuation` and `stitch_body_text` reconnects it to the previous column's final entry.
 - **Word-Wrap Dehyphenation**:
   When an entry body ends with a word-split hyphen (e.g. `aris-`) and the continuation begins with a lowercase letter (e.g. `tocratic`), `stitch_body_text` joins them into `aristocratic`.
-- **Orphan Headword Resolution**:
-  When a headword appears at the very bottom of a column or page with an empty body (e.g. `xaniwäyrançiliq` on page 400), and the next column starts with that body labeled by a hallucinated running header (e.g. `xaniwäyranliq`), the stitching logic recognizes the empty body and assigns the continuation text to the orphan headword, removing the hallucinated headword.
 
 ### 4.3. Numbered Sense Splitting
 - **Sequential Splitting**:
