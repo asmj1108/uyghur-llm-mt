@@ -1,0 +1,78 @@
+{
+  "n_llm_based": 1010,
+  "per_model_accuracy": {
+    "byt5-base": {
+      "all": 0.9415282392026578,
+      "llm_based": 0.9168316831683169,
+      "rule_based": 0.9912854030501089,
+      "dedup": 1.0
+    },
+    "qwen-0.8b": {
+      "all": 0.9375415282392027,
+      "llm_based": 0.9138613861386139,
+      "rule_based": 0.9847494553376906,
+      "dedup": 1.0
+    },
+    "qwen-2b": {
+      "all": 0.9461794019933555,
+      "llm_based": 0.9227722772277228,
+      "rule_based": 0.9934640522875817,
+      "dedup": 1.0
+    },
+    "xlmr-large": {
+      "all": 0.9275747508305647,
+      "llm_based": 0.900990099009901,
+      "rule_based": 0.9803921568627451,
+      "dedup": 1.0
+    }
+  },
+  "per_model_error_rate_llm": {
+    "byt5-base": 0.08316831683168317,
+    "qwen-0.8b": 0.08613861386138613,
+    "qwen-2b": 0.07722772277227723,
+    "xlmr-large": 0.09900990099009901
+  },
+  "pairwise_error_overlap": {
+    "byt5-base|qwen-0.8b": {
+      "jaccard": 0.32558139534883723,
+      "shared_errors": 42,
+      "byt5-base_errors": 84,
+      "qwen-0.8b_errors": 87
+    },
+    "byt5-base|qwen-2b": {
+      "jaccard": 0.39655172413793105,
+      "shared_errors": 46,
+      "byt5-base_errors": 84,
+      "qwen-2b_errors": 78
+    },
+    "byt5-base|xlmr-large": {
+      "jaccard": 0.3142857142857143,
+      "shared_errors": 44,
+      "byt5-base_errors": 84,
+      "xlmr-large_errors": 100
+    },
+    "qwen-0.8b|qwen-2b": {
+      "jaccard": 0.30952380952380953,
+      "shared_errors": 39,
+      "qwen-0.8b_errors": 87,
+      "qwen-2b_errors": 78
+    },
+    "qwen-0.8b|xlmr-large": {
+      "jaccard": 0.2550335570469799,
+      "shared_errors": 38,
+      "qwen-0.8b_errors": 87,
+      "xlmr-large_errors": 100
+    },
+    "qwen-2b|xlmr-large": {
+      "jaccard": 0.2805755395683453,
+      "shared_errors": 39,
+      "qwen-2b_errors": 78,
+      "xlmr-large_errors": 100
+    }
+  },
+  "all_models_wrong": {
+    "observed": 23,
+    "expected_if_independent": 0.06,
+    "over_representation_factor": 415.72
+  }
+}

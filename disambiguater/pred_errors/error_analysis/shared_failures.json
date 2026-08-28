@@ -1,0 +1,451 @@
+[
+  {
+    "row": 99,
+    "sentence": "_ _ مەن ماۋۇ تانىنىڭ تەۋرىنىش قېتىم سانىنى سانايمەن.",
+    "target_word": "قېتىم",
+    "gold_idx": 5,
+    "gold_candidate": "Lemma: قېتىم | Features: Noun, Attributive",
+    "candidates": [
+      "Lemma: قات | Features: Noun, First person singular possessive, Nominative",
+      "Lemma: قېتىم | Features: Noun, Nominative",
+      "Lemma: قېتىم | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: قات | Features: Noun, First person singular possessive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: قېتىم | Features: Noun, Attributive"
+    ],
+    "model_preds": {
+      "byt5-base": 2,
+      "qwen-0.8b": 2,
+      "qwen-2b": 2,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "The word 'قېتىم' functions as an attributive noun modifying 'سانى' within the noun phrase, making 'Attributive' the correct functional description."
+  },
+  {
+    "row": 143,
+    "sentence": "بىر تۈركۈم ئىلمىي تەرەققىياتقا كاپالەتلىك قىلىپ ئۇنى ئىلگىرى سۈرىدىغان تۈزۈلمە، مېخانىزىملارنى مۇكەممەللەشتۈرۈپ، ياخشى تەجرىبىلەرنى يەكۈنلەپ، ئۆگىنىشنى ئەمەلىيلەشتۈرۈش پائالىيىتىنىڭ تەرتىپلىك، كۈچلۈك، ئۈنۈملىك بولۇشىغا كاپالەتلىك قىلدى.",
+    "target_word": "بولۇشىغا",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: بولۇش | Features: Noun, Third person possessive singular or plural, Dative",
+    "candidates": [
+      "Lemma: بول | Features: Standard verb, Intransitive, Gerund, Third person possessive singular or plural, Dative",
+      "Lemma: بولۇش | Features: Noun, Third person possessive singular or plural, Dative"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The word 'بولۇشىغا' is derived from the deverbal noun 'بولۇش' (being), which takes the third-person possessive suffix '-ى' and the dative case suffix '-غا', making candidate 2 the accurate morphological description."
+  },
+  {
+    "row": 219,
+    "sentence": "بۇ كەنتتە نەچچە ئون ئائىلىلىك ياشايدىكەن.",
+    "target_word": "ئائىلىلىك",
+    "gold_idx": 1,
+    "gold_candidate": "Lemma: ئائىلىلىك | Features: Noun, Nominative",
+    "candidates": [
+      "Lemma: ئائىلىلىك | Features: Noun, Nominative",
+      "Lemma: ئائىلىلىك | Features: Adjective",
+      "Lemma: ئائىلىلىك | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: ئائىلىلىك | Features: Adjective, Adverbial",
+      "Lemma: ئائىلىلىك | Features: Noun, Attributive",
+      "Lemma: ئائىلىلىك | Features: Adjective, Substantive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular"
+    ],
+    "model_preds": {
+      "byt5-base": 4,
+      "qwen-0.8b": 2,
+      "qwen-2b": 4,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "In this sentence, the word 'ئائىلىلىك' functions as a noun representing the subject of the verb 'ياشايدىكەن' and appears in the nominative case without any oblique suffixes."
+  },
+  {
+    "row": 357,
+    "sentence": "ھەربىر بايقاش ۋە ھەربىر كەشپىيات كىشىلەرنىڭ كۆڭۇل قويۇپ پىكىر يۈرگۈزۈشىدىن بارلىققا كەلگەن.",
+    "target_word": "بايقاش",
+    "gold_idx": 3,
+    "gold_candidate": "Lemma: بايقا | Features: Standard verb, Transitive, Gerund, Nominative",
+    "candidates": [
+      "Lemma: بايقاش | Features: Noun, Attributive",
+      "Lemma: بايقاش | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: بايقا | Features: Standard verb, Transitive, Gerund, Nominative",
+      "Lemma: بايقاش | Features: Noun, Nominative"
+    ],
+    "model_preds": {
+      "byt5-base": 4,
+      "qwen-0.8b": 4,
+      "qwen-2b": 4,
+      "xlmr-large": 4
+    },
+    "pseudo_gold_reasoning": "The word 'بايقاش' is a deverbal noun formed by the gerund suffix '-ش' attached to the transitive verb root 'بايقا', and it functions as the nominative subject of the sentence."
+  },
+  {
+    "row": 393,
+    "sentence": "بىر تال پەي بىلەن بىر تال زەمبىرەك ئوقنىڭ بوشلۇقتىن ئوخاش سۈرئەتتە چۈشىدىغانلىقىغا ساراڭدىن باشقا، ھېچكىم چىنپۈتمەيدۇ.",
+    "target_word": "باشقا",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: باش | Features: Noun, Dative",
+    "candidates": [
+      "Lemma: باشقا | Features: Adjective",
+      "Lemma: باش | Features: Noun, Dative",
+      "Lemma: باشقا | Features: Adjective, Substantive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: باشقا | Features: Adjective, Adverbial"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The word 'باشقا' is morphologically composed of the noun 'باش' and the dative suffix '-قا', and Candidate 1 is the only option that correctly identifies this morphological structure by accounting for the suffix."
+  },
+  {
+    "row": 476,
+    "sentence": "قېرى قارىياغاچلار قۇۋزاقلىرىنى بېغىر رەڭ مۇخ ئاستىغا يوشۇرۇپ غەمكىن قاراپ تۇرۇشاتتى.",
+    "target_word": "مۇخ",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: مۇخ | Features: Noun, Nominative",
+    "candidates": [
+      "Lemma: مۇخ | Features: Noun, Attributive",
+      "Lemma: مۇخ | Features: Noun, Nominative",
+      "Lemma: مۇخ | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The word 'مۇخ' functions as a noun in its base nominative form, serving as the object of the postposition 'ئاستىغا' within the noun phrase 'بېغىر رەڭ مۇخ'."
+  },
+  {
+    "row": 484,
+    "sentence": "تېخنىك ۋاكولىنكو بولسا پاكارراق، لېكىن قاۋۇل، چىرايى سەت، بۇرنى يوغان كىشى ئىدى.",
+    "target_word": "تېخنىك",
+    "gold_idx": 6,
+    "gold_candidate": "Lemma: تېخنىك | Features: Noun, Nominative",
+    "candidates": [
+      "Lemma: تېخنىك | Features: Noun, Attributive",
+      "Lemma: تېخنىك | Features: Adjective",
+      "Lemma: تېخنىك | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: تېخنىك | Features: Adjective, Substantive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: تېخنىك | Features: Adjective, Adverbial",
+      "Lemma: تېخنىك | Features: Noun, Nominative"
+    ],
+    "model_preds": {
+      "byt5-base": 2,
+      "qwen-0.8b": 2,
+      "qwen-2b": 1,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "The word 'تېخنىك' functions as a noun denoting a profession or title, and in this sentence, it serves as the subject or title in the nominative case."
+  },
+  {
+    "row": 588,
+    "sentence": "تۈنۈگۈن خۇاشى_شەھەر_گېزىتى مۇخبىرى مەركىزىي_تېلىۋىزىيە_ئىستانىسى باش_مۇھەررىر ۋە باھا_بېرىش_ئورگىنىغا تېلېفون_قىلىپ بۇ ئىشنى سورىدى،",
+    "target_word": "بېرىش",
+    "gold_idx": 4,
+    "gold_candidate": "Lemma: بېرىش | Features: Noun, Attributive",
+    "candidates": [
+      "Lemma: بېرىش | Features: Noun, Nominative",
+      "Lemma: بېرىش | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: بېر | Features: Standard verb, Transitive, Gerund, Nominative",
+      "Lemma: بېرىش | Features: Noun, Attributive"
+    ],
+    "model_preds": {
+      "byt5-base": 3,
+      "qwen-0.8b": 3,
+      "qwen-2b": 3,
+      "xlmr-large": 3
+    },
+    "pseudo_gold_reasoning": "The word 'بېرىش' functions as a verbal noun within the compound phrase 'باھا بېرىش ئورگىنى', where it acts attributively to modify the noun 'ئورگىنى', making the attributive classification correct."
+  },
+  {
+    "row": 604,
+    "sentence": "شۇ كۈلكىنىڭ ئاجايىپ ساپ، ھالال ۋە ۋىجدانلىق يۈرەكنىڭ مەمنۇنىيەت بىلەن ياڭراتقان چىن ئىنسانلىق خىتابى ئىكەنلىكىنى كېيىن، بەكمۇ كېيىن ھېس قىلىپ يەتتىم.",
+    "target_word": "ئاجايىپ",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: ئاجايىپ | Features: Adjective, Adverbial",
+    "candidates": [
+      "Lemma: ئاجايىپ | Features: Adjective",
+      "Lemma: ئاجايىپ | Features: Adjective, Adverbial"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "In this context, 'ئاجايىپ' functions as an intensifier modifying the adjective 'ساپ', making the 'Adjective, Adverbial' classification accurate."
+  },
+  {
+    "row": 672,
+    "sentence": "بەقەسەم تون كىيگەن 30 ياشلار چامىسىدىكى ئاقپىشماق ئادەم كۆك سىرلانغان كەڭ دەرۋازىدىن ئاق بوز ئاتنى يورغىلىتىپ كىرىپ كەلدى.",
+    "target_word": "كۆك",
+    "gold_idx": 1,
+    "gold_candidate": "Lemma: كۆك | Features: Adjective, Adverbial",
+    "candidates": [
+      "Lemma: كۆك | Features: Adjective, Adverbial",
+      "Lemma: كۆك | Features: Adjective",
+      "Lemma: كۆك | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: كۆك | Features: Noun, Nominative",
+      "Lemma: كۆك | Features: Noun, Attributive",
+      "Lemma: كۆك | Features: Adjective, Substantive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular"
+    ],
+    "model_preds": {
+      "byt5-base": 2,
+      "qwen-0.8b": 2,
+      "qwen-2b": 2,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "In this context, the adjective 'كۆك' functions adverbially to modify the past participle 'سىرلانغان', making the 'Adjective, Adverbial' classification the most accurate description of its syntactic role."
+  },
+  {
+    "row": 679,
+    "sentence": "بىر – بىرىنى ئىتتىرىشىپ، قىستىشىپ، قولۋاقلارنى ئۆرۈۋەتكىلى قىل قالدى.",
+    "target_word": "بىرىنى",
+    "gold_idx": 1,
+    "gold_candidate": "Lemma: بىرى | Features: Pronoun, Accusative",
+    "candidates": [
+      "Lemma: بىرى | Features: Pronoun, Accusative",
+      "Lemma: بىر | Features: Numeral, Substantive, Third person possessive singular or plural, Accusative"
+    ],
+    "model_preds": {
+      "byt5-base": 2,
+      "qwen-0.8b": 2,
+      "qwen-2b": 2,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "The word 'بىرىنى' functions as a reciprocal pronoun in this context, making 'Pronoun' the correct grammatical category rather than 'Numeral', which describes the base root 'بىر' but not the inflected form."
+  },
+  {
+    "row": 680,
+    "sentence": "بىر – بىرىنى ئىتتىرىشىپ، قىستىشىپ، قولۋاقلارنى ئۆرۈۋەتكىلى قىل قالدى.",
+    "target_word": "قىل",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: قىل | Features: Standard verb, Transitive, Imperative, Second person, Singular",
+    "candidates": [
+      "Lemma: قىل | Features: Noun, Nominative",
+      "Lemma: قىل | Features: Standard verb, Transitive, Imperative, Second person, Singular",
+      "Lemma: قىل | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The target word 'قىل' functions as the stem of the verb 'قىلماق' in the auxiliary construction 'V-غىلى قىل قالدى', and among the provided options, only the second candidate correctly identifies it as a verb."
+  },
+  {
+    "row": 688,
+    "sentence": "غوجىدار خانىم قىزنىڭ گېپىنى ئاڭلاپ، سەل باشقىچە بولۇپ قالدى.",
+    "target_word": "باشقىچە",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: باشقا | Features: Adjective, Adverbial, Limitative",
+    "candidates": [
+      "Lemma: باش | Features: Noun, Terminative converb",
+      "Lemma: باشقا | Features: Adjective, Adverbial, Limitative",
+      "Lemma: باش | Features: Noun, Dative, Limitative",
+      "Lemma: باشقا | Features: Adjective, Substantive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular, Limitative",
+      "Lemma: باشقا | Features: Adjective, Limitative"
+    ],
+    "model_preds": {
+      "byt5-base": 3,
+      "qwen-0.8b": 5,
+      "qwen-2b": 5,
+      "xlmr-large": 3
+    },
+    "pseudo_gold_reasoning": "The word 'باشقىچە' is derived from the adjective 'باشقا' by adding the limitative suffix '-چە', and it functions as an adverbial modifier in the given sentence."
+  },
+  {
+    "row": 818,
+    "sentence": "ھەر ئىككىلىمىزنىڭ ئۆيى شەھەردىن يىراقتىكى ناھىيىدە بولۇپ، ھەر ئىككىمىز ناھىيە مەركىزىدىكى توپا تاملىق كونا مەكتەپنىڭ يۈزلىرى يېرىق، ئادەم ئولتۇرۇپ بولغىچە مىدىرلاپ يېقىمسىز ئاۋازدا غىچىرلاپ كېتىدىغان، جىگەررەڭ سىرلىرى ئۆڭۈپ كەتكەن ياغاچ پارتا - ئورۇندۇقلۇق سىنىپىدىكى ساۋاقداشلاردىن ئىدۇق.",
+    "target_word": "ئىككىمىز",
+    "gold_idx": 1,
+    "gold_candidate": "Lemma: ئىككى | Features: Numeral, Substantive, First person plural possessive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+    "candidates": [
+      "Lemma: ئىككى | Features: Numeral, Substantive, First person plural possessive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: ئىككى | Features: Numeral, Substantive, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, First person, Plural"
+    ],
+    "model_preds": {
+      "byt5-base": 2,
+      "qwen-0.8b": 2,
+      "qwen-2b": 2,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "The word 'ئىككىمىز' consists of the numeral 'ئىككى' (two) followed by the first-person plural possessive suffix '-مىز', which correctly identifies the form as 'both of us' in the given context."
+  },
+  {
+    "row": 873,
+    "sentence": "ئۇ لىق سۇ توشقۇزۇلغان سېۋەتنى كۆتۈرۈپ ئۆيگە كىرگەنىكەن، دادىسى ئۇنىڭ پەمپاراسىتىگە ئاپىرىن ئوقۇپتۇ،",
+    "target_word": "لىق",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: لىق | Features: Adjective, Adverbial",
+    "candidates": [
+      "Lemma: لىق | Features: Adjective",
+      "Lemma: لىق | Features: Adjective, Adverbial"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The word 'لىق' functions as an adverbial intensifier modifying the participle 'توشقۇزۇلغان' to indicate that the basket is filled to the brim, making the 'Adverbial' feature essential for an accurate description."
+  },
+  {
+    "row": 982,
+    "sentence": "قۇلۇلىنىڭ قاناتلىرى بارا - بارا كىچىكلەپ، ئاخىرى يوقاپ كېتىپتۇ.",
+    "target_word": "بارا",
+    "gold_idx": 3,
+    "gold_candidate": "Lemma: بارا | Features: Noun, Attributive",
+    "candidates": [
+      "Lemma: بارا | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: بارا | Features: Noun, Nominative",
+      "Lemma: بارا | Features: Noun, Attributive"
+    ],
+    "model_preds": {
+      "byt5-base": 2,
+      "qwen-0.8b": 2,
+      "qwen-2b": 2,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "Although 'بارا' is morphologically a converb form of the verb 'بار', in this specific reduplicated adverbial construction, it functions as an attributive modifier describing the process of the wings becoming smaller."
+  },
+  {
+    "row": 992,
+    "sentence": "ئەدەبىېئەسەرلەرنى ئوقۇش بىر خىل مەدەنىيەت جۇغلاش، ئەقىل جۇغلاش، ھېسىسيات جۇغلاش، بىلىم جۇغلاش جەريانىدۇر.",
+    "target_word": "جۇغلاش",
+    "gold_idx": 4,
+    "gold_candidate": "Lemma: جۇغلاش | Features: Noun, Attributive",
+    "candidates": [
+      "Lemma: جۇغلا | Features: Standard verb, Transitive, Gerund, Nominative",
+      "Lemma: جۇغلاش | Features: Noun, Nominative",
+      "Lemma: جۇغلاش | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: جۇغلاش | Features: Noun, Attributive"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The word 'جۇغلاش' functions as a verbal noun modifying the noun 'جەريان', making its syntactic role attributive rather than nominative."
+  },
+  {
+    "row": 1034,
+    "sentence": "ئۇلار ئوتۇن تېرە - تېرە كەچ كىرگەننى تۇيماپتۇ.",
+    "target_word": "تېرە",
+    "gold_idx": 1,
+    "gold_candidate": "Lemma: تېرە | Features: Noun, Attributive",
+    "candidates": [
+      "Lemma: تېرە | Features: Noun, Attributive",
+      "Lemma: تېرە | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: تېرە | Features: Noun, Nominative"
+    ],
+    "model_preds": {
+      "byt5-base": 3,
+      "qwen-0.8b": 3,
+      "qwen-2b": 3,
+      "xlmr-large": 3
+    },
+    "pseudo_gold_reasoning": "In the context of the reduplicated phrase 'تېرە-تېرە', the word functions as an attributive modifier describing the action of gathering, making the attributive noun classification the most appropriate among the provided options."
+  },
+  {
+    "row": 1090,
+    "sentence": "لېكىن ئوغلى خۇشال بولۇشنىڭ ئورنىغا جىمىپ قالدى.",
+    "target_word": "بولۇشنىڭ",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: بولۇش | Features: Noun, Genitive",
+    "candidates": [
+      "Lemma: بول | Features: Standard verb, Intransitive, Gerund, Genitive",
+      "Lemma: بولۇش | Features: Noun, Genitive"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The word 'بولۇشنىڭ' functions as a noun because the gerund suffix '-ۇش' nominalizes the verb root 'بول', and the genitive suffix '-نىڭ' marks its syntactic role, making the second candidate's classification as a noun with a genitive case accurate."
+  },
+  {
+    "row": 1179,
+    "sentence": "«ياخشى چارە ئىشنىڭ يېرىمى» دېگەن ماقالمۇ شۇنىڭدىن قالغانىكەن.",
+    "target_word": "يېرىمى",
+    "gold_idx": 3,
+    "gold_candidate": "Lemma: يېرىم | Features: Numeral, Substantive, Third person possessive singular or plural, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+    "candidates": [
+      "Lemma: يېرىم | Features: Noun, Third person possessive singular or plural, Nominative",
+      "Lemma: يېرىم | Features: Adjective, Substantive, Third person possessive singular or plural, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: يېرىم | Features: Numeral, Substantive, Third person possessive singular or plural, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: يېرىم | Features: Noun, Third person possessive singular or plural, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The word 'يېرىمى' functions as a substantive numeral in this context, representing the head of the genitive construction 'ئىشنىڭ يېرىمى', and candidate 2 correctly identifies its primary lexical category as a numeral acting in a substantive role."
+  },
+  {
+    "row": 1237,
+    "sentence": "ئوينىغاندا گالىلېي ھەرخىل شەكىلدىكى پىل ھارۋىلىرى، كېمە، چاقپەلەكتەك ئۇششاق ئويۇنچۇقلارنى ياسايتتى.",
+    "target_word": "ئوينىغاندا",
+    "gold_idx": 3,
+    "gold_candidate": "Lemma: ئوينا | Features: Standard verb, Intransitive, Relative substantival verbal adjective, Substantive, Locative",
+    "candidates": [
+      "Lemma: ئوينا | Features: Standard verb, Transitive, Relative substantival verbal adjective, Substantive, Locative",
+      "Lemma: ئوينا | Features: Standard verb, Intransitive, Relative substantival verbal adjective, Locative",
+      "Lemma: ئوينا | Features: Standard verb, Intransitive, Relative substantival verbal adjective, Substantive, Locative",
+      "Lemma: ئوينى | Features: Standard verb, Transitive, Relative substantival verbal adjective, Locative"
+    ],
+    "model_preds": {
+      "byt5-base": 2,
+      "qwen-0.8b": 2,
+      "qwen-2b": 2,
+      "xlmr-large": 2
+    },
+    "pseudo_gold_reasoning": "The word 'ئوينىغاندا' is derived from the intransitive verb root 'ئوينا', where the suffix '-غان' functions as a verbal noun (substantive) and the suffix '-دا' marks the locative case, creating a temporal adverbial clause."
+  },
+  {
+    "row": 1397,
+    "sentence": "كراي ئارقامدىن ئەگىشىپ كەلمەكتە.",
+    "target_word": "ئەگىشىپ",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: ئەگەش | Features: Standard verb, Transitive, Perfect verbal adverb",
+    "candidates": [
+      "Lemma: ئەگەش | Features: Standard verb, Intransitive, Perfect verbal adverb",
+      "Lemma: ئەگەش | Features: Standard verb, Transitive, Perfect verbal adverb"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "The verb 'ئەگەش' is a transitive verb that takes an object, and the suffix '-پ' functions as a perfect verbal adverb in this sentence."
+  },
+  {
+    "row": 1466,
+    "sentence": "ئۇ پىشانەمدىكى تەرنى كۆرگەن بولسا كېرەك، مەندىن: _ _ قانچە ياشقا كىردىڭىز؟ _ _ دەپ سورىدى.",
+    "target_word": "كېرەك",
+    "gold_idx": 2,
+    "gold_candidate": "Lemma: كېرەك | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+    "candidates": [
+      "Lemma: كېرەك | Features: Noun, Nominative",
+      "Lemma: كېرەك | Features: Noun, Nominative + Combined with: Lemma: ئى | Features: Copula, Aorist, Third person, Singular",
+      "Lemma: كېرەك | Features: Noun, Attributive"
+    ],
+    "model_preds": {
+      "byt5-base": 1,
+      "qwen-0.8b": 1,
+      "qwen-2b": 1,
+      "xlmr-large": 1
+    },
+    "pseudo_gold_reasoning": "In the construction 'كۆرگەن بولسا كېرەك', the word 'كېرەك' functions as a modal predicate, which is morphosyntactically analyzed as a predicative noun combined with a zero-marked third-person singular copula."
+  }
+]

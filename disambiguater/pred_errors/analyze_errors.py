@@ -7,7 +7,7 @@ import numpy as np
 # =============================================================================
 # CONFIG (Point PREDICTIONS to generated JSON files)
 # =============================================================================
-TEST_FILE = "dev.jsonl"
+TEST_FILE = "../dev.jsonl"
 OUT_DIR = "error_analysis"
 SEED = 42
 
@@ -139,14 +139,13 @@ def main():
     print("=" * 60)
     print(f"n = {n_llm}")
     for n in names:
-        print(f"  {n:12s} acc={acc[n]['all']:.4f}  err={err_rates[n]:.4f}")
+        print(f"  {n:12s} acc={acc[n][HONEST_SRC]:.4f}  err={err_rates[n]:.4f}")
     print("\n  Pairwise error Jaccard:")
     for k, v in pairwise.items():
         print(f"    {k:28s} J={v['jaccard']:.3f}  shared={v['shared_errors']}")
     print("\n  ALL models wrong on the same row:")
     print(f"    observed = {len(all_wrong)}")
-    print(f"    expected (independent) = {expected_all_wrong:.1f}")
-    print(f"    over-representation = {report['all_models_wrong']['over_representation_factor']}x")
+    print(f"    expected (independent-error model) = {expected_all_wrong:.2f}")
     print(f"\n  -> {len(all_wrong)} shared failures dumped to {OUT_DIR}/shared_failures.json\n")
 
 

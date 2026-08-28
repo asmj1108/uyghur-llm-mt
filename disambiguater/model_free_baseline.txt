@@ -1,0 +1,17 @@
+==================================================
+📊 MODEL-FREE CANDIDATE BASELINES
+==================================================
+
+dev (n=1505 evaluable):
+random_expected   : 0.4136
+random_sampled    : 0.4199
+most_features     : 0.1488
+fewest_features   : 0.7342
+first             : 0.7807
+
+test (n=1447 evaluable):
+random_expected   : 0.4051
+random_sampled    : 0.4043
+most_features     : 0.1368
+fewest_features   : 0.7326
+first             : 0.7657

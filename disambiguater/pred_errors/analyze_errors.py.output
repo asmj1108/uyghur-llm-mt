@@ -1,0 +1,23 @@
+============================================================
+  CROSS-MODEL ERROR ANALYSIS (llm_based slice)
+============================================================
+n = 1010
+  byt5-base    acc=0.9415  err=0.0832
+  qwen-0.8b    acc=0.9375  err=0.0861
+  qwen-2b      acc=0.9462  err=0.0772
+  xlmr-large   acc=0.9276  err=0.0990
+
+  Pairwise error Jaccard:
+    byt5-base|qwen-0.8b          J=0.326  shared=42
+    byt5-base|qwen-2b            J=0.397  shared=46
+    byt5-base|xlmr-large         J=0.314  shared=44
+    qwen-0.8b|qwen-2b            J=0.310  shared=39
+    qwen-0.8b|xlmr-large         J=0.255  shared=38
+    qwen-2b|xlmr-large           J=0.281  shared=39
+
+  ALL models wrong on the same row:
+    observed = 23
+    expected (independent) = 0.1
+    over-representation = 415.72x
+
+  -> 23 shared failures dumped to error_analysis/shared_failures.json
