@@ -12,19 +12,127 @@ prompt to guide an LLM to produce better translations.
 
 ---
 
-## Pipeline Overview
+## Main Pipeline
+
+### 1. Architecture & Component Integration
+
+The main pipeline (`pipeline/`) integrates the individual components into an end-to-end neuro-symbolic framework. It transforms raw Uyghur sentences into structured linguistic prompts that guide a downstream LLM in producing faithful English translations.
 
 ```
-Input sentence (Uyghur)
-        ↓
-[1] Dependency Parser     →  HEAD, DEPREL
-[2] Morphological Tagger  →  LEMMA, XPOS, FEATS
-[3] Dictionary Lookup     →  word-level translations
-        ↓
-Linguistic description (in-context prompt)
-        ↓
-LLM → English translation
+                        Input Sentence (Uyghur)
+                                   │
+         ┌─────────────────────────┼────────────────────────┐
+         │                         │                        │
+         ▼                         ▼                        ▼
+[1] Dependency Parser   [2] Morphological Tagger  [3] Dictionary Lookup
+    (MUDT DiaParser)        (Apertium + Qwen 2B)      (Schwarz SQLite DB)
+         │                         │                        │
+       HEAD,                     LEMMA,                 Word-Level
+      DEPREL                  XPOS, FEATS              Translations
+         │                         │                        │
+         └─────────────────────────┼────────────────────────┘
+                                   │
+                                   ▼
+                 [4] In-Context Linguistic Prompt Builder
+                     (Clause Structure + Markdown Table)
+                                   │
+                                   ▼
+                   [5] Downstream LLM Translation
+                           (Uyghur → English)
 ```
+
+#### Component Responsibilities & Key Aspects
+
+1. **Dependency Parser (`pipeline/parser.py`)**:
+    - Parses the Uyghur sentence using the MUDT-trained XLM-RoBERTa DiaParser model.
+    - Outputs sentence tokenization and syntactic dependency relations (`HEAD`, `DEPREL`).
+    - Evaluates syntactic predicate strength: identifies clausal roots and marks strong predicate signals (heads of zero-copula constructions) versus weak predicate signals (`root`), which are critical for downstream morphological disambiguation.
+
+2. **Morphological Analyzer & Disambiguator (`pipeline/morphology.py`)**:
+    - Generates candidate morphological readings for each token using `apertium-uig` (`LEMMA`, `POS`, `FEATS`, enclitics).
+    - Resolves ambiguities through a fixed, principled disambiguation cascade:
+        1. *Deduplication*: Merges candidate readings that collapse to identical grammatical features after UD mapping.
+        2. *Zero-Copula Syntactic Heuristics*: Uses the parser's dependency and predicate strength markings to resolve nominal predicate ambiguity. Spurious copula enclitic readings (`+ئى<cop>`) are stripped from nominal modifiers while being retained on true clausal predicates.
+        3. *Fine-tuned LLM Disambiguator (Qwen-2B)*: For tokens that remain ambiguous (>1 reading), the fine-tuned Qwen-2B model selects the contextually correct reading using in-context prompt formatting matching training parity.
+    - Manages a monotonic alignment boundary between the parser and Apertium token streams, falling back gracefully for unaligned tokens.
+
+3. **Dictionary Lookup (`pipeline/dictionary.py`)**:
+    - Interfaces with the digitized Henry G. Schwarz *An Uyghur-English Dictionary* SQLite database.
+    - Translates disambiguated lemmas into word-level English glosses and parts of speech.
+    - Accounts for verb hyphenation conventions (`كەل-` vs. `كەل`) and terminal consonant devoicing (`ب/پ`, `گ/ك`, `غ/ق`, `د/ت`, `ج/چ`, `ز/س`).
+
+4. **In-Context Prompt Builder (`pipeline/prompt.py`)**:
+    - Fuses syntactic dependencies, disambiguated morphological analyses, ULY transliterations, and dictionary definitions into a consolidated linguistic representation (`LinguisticAnalysis`).
+    - Renders the analysis into structured in-context prompts (supporting Markdown table, structured list, and JSON formats).
+    - Summarizes clause architecture (main predicate, core arguments, obliques, and modifiers) and provides explicit translation guidelines (e.g., pro-drop subject resolution, inflection preservation, dictionary interpretation).
+
+5. **Downstream LLM Translation (`pipeline/translator.py`)**:
+    - Dispatches the formatted prompt to an LLM via an OpenAI-compatible API to generate the final English translation.
+
+---
+
+### 2. Dictionary Component Improvement & Evaluation
+
+#### Evaluation Setup & Baseline
+To evaluate dictionary coverage systematically on natural text, we ran the pipeline over the FLORES-200 Uyghur development set (`uig_Arab.dev`, 997 sentences, 17,159 content tokens, excluding punctuation) using the evaluation harness (`run_flores_dev.py`).
+
+- **Initial Baseline Coverage**: **74.8%** (12,840 / 17,159 content tokens)
+- **Unique Missed Lemmas**: 2,159
+- **Top Missed Items**: Common grammatical items (`ئى` copula clitic, `مۇمكىن` modal, `بولغان` participle), high-frequency verbs (`بېر-`, `ئوخشا-`), multiword compounds (`تەلەپ قىل`), standard words with orthographic differences (`مەدەنىيەت`, `يۇقىرى`, `ھەرىكەت`, `شىركىت`), and Latin numerals (`1`, `2`).
+
+#### Issues Encountered & Diagnosis
+Using diagnostic tooling (`stats/analyze_misses.py`) and direct queries against the Schwarz SQLite database, we categorized the failure modes:
+
+1. **Analytical Multiword Verbs**: Apertium lemmatizes compound predicates as multiword expressions with spaces (e.g., `تەلەپ قىل` "to demand", `بار بول` "to exist", `يۈز بەر` "to happen", `ئېلان قىل` "to announce"). Because the dictionary stores single-word stems (`تەلەپ`, `قىل-`), whole-phrase queries failed entirely (~380–395 tokens).
+2. **Universal Content (Digits & Latin Script)**: Arabic numerals (`1`, `2`, `0230`) and Latin-script tokens (acronyms and proper nouns such as `HIV`, `UTC`, `JAS`, `Gripen`) were counted as dictionary misses, despite being universal symbols that require no bilingual translation (~500+ tokens).
+3. **Lemmatization Artifacts**: Over-stemming by the morphological analyzer produced non-lexical stems (e.g., lemma `ئالد` for surface `ئالدى` "front", `چو` for `چوڭ` "big"), even though the attested surface form itself is a valid dictionary headword (~58–188 tokens).
+4. **Historical Orthographic Shifts (1991 Dictionary vs. Contemporary Uyghur)**: Henry G. Schwarz's dictionary was compiled and published in 1991. Uyghur orthography underwent official reforms and informal shifts from the 1980s through the 2000s, producing systematic vowel harmony and orthographic mismatches in everyday words:
+    - Medial and root vowel differences: `مۇمكىن` (standard) vs. `مۈمكىن` (Schwarz), `يۇقىرى` vs. `يۇقۇرى`, `شىركىت` vs. `شىركەت`, `مەدەنىيەت` vs. `مەدىنىيەت`, `ھەرىكەت` vs. `ھەركەت`.
+    - Verb root allomorphy: `بېر-` vs. `بەر-` ("to give"), `ئوخشى-` vs. `ئوخشا-` ("to resemble").
+5. **Modern Lexical Gaps**: A 1991 handheld dictionary naturally lacks modern technology, media, and geopolitical terms (e.g., `تېلېۋىزىيە` "television", `پىروگرامما` "program", `كومپيۇتېر` "computer", `تۇبېركۇليوز` "tuberculosis").
+6. **False-Friend Risks in Automatic Fuzzy Matching**: Unconstrained edit-distance lookups frequently map to unrelated words (e.g., participle `بولغان` matching `بۇلغان` "sable / Mustela zibellina", `راكى` "cancer" matching `راك` "crab", `ئالد` matching `ئال` "to take!"), demonstrating that blind fuzzy matching is actively dangerous for translation accuracy.
+
+#### Design Decisions
+
+1. **Universal Token Bypass**:
+    - Pure Latin digits (`pos="num."`) and Latin-script words (`pos="foreign"`) are recognized directly by `lookup()` and marked covered with synthetic entries. They require no dictionary definition and do not penalize coverage statistics.
+
+2. **Analytical Multiword Split**:
+    - When a multiword lemma containing spaces fails exact lookup, the dictionary splits it and retrieves the entry for its primary constituent, providing critical semantic glosses for compound verbs (e.g., `تەلەپ` "demand; claim" for `تەلەپ قىل`).
+
+3. **Surface-Form Fallback**:
+    - If a lemmatized stem produces no match, the dictionary automatically queries the attested surface form with variant generation, capturing tokens where morphological over-stemming stripped essential root segments.
+
+4. **Rejection of Curated Alias Lists (Linguistic Scope Boundary)**:
+    - While an experimental curated alias table boosted coverage to 82.8%, contemporary Uyghur orthography exhibits layered historical shifts, discrepancies between colloquial speech and official media standards, and a lack of standardized transition studies. Hardcoding orthographic aliases was determined to be linguistically unprincipled and out of scope for the thesis. All curated alias tables and ad-hoc phonetic mutation rules were cleanly reverted.
+
+5. **Universal Phonetic Bridge: Prompt-Wide ULY Column**:
+    - Rather than guessing orthographic mutations in Arabic script, a dedicated Uyghur Latin Yëziqi (`ULY`) column is added to the prompt for every token. Because Latin transliteration surfaces the phonetic structure directly, it allows the downstream LLM to recognize transparent international borrowings, cognates, and named entities (e.g., `tuberkulyoz` ↔ *tuberculosis*, `uniwërsitët` ↔ *university*) without needing ad-hoc dictionary entries.
+
+6. **Advisory Spelling-Near Context (`lookup_near`)**:
+    - For remaining misses, the dictionary computes candidate headwords within edit distance $\le 1$ in normalized ULY space.
+    - Crucially, candidates are not asserted as ground truth. Instead, they are presented in the prompt with an advisory marker (`≈`) alongside an explicit translation guideline:
+      > *"Tokens marked '≈' have no exact dictionary entry; the listed candidates are spelling-near matches — verify meaning and part of speech against the sentence context before using them."*
+    - Proper nouns (`Proper noun` from Apertium) are excluded from near-match searches to avoid spurious false suggestions for named entities (e.g., preventing footballer `ۋىدال` (Vidal) from matching `ۋىسال` "lover's tryst").
+    - To prevent latency bottlenecks, near-candidate search uses precomputed normalized ULY representations, banded Levenshtein pruning ($O(k \cdot n)$), and per-token caching, reducing lookup overhead to ~16 ms per miss.
+
+7. **Strict Inference-Time Parity**:
+    - The pipeline operates strictly on Uyghur source sentences. Parallel English reference comparisons are used exclusively in offline diagnostic tooling (`stats/analyze_misses.py`) to categorize remaining content gaps, never at runtime.
+
+#### Statistics: Before and After
+
+Evaluated on the FLORES-200 Uyghur development set (997 sentences, 17,159 content tokens):
+
+| Metric | Initial Baseline | Intermediate (Curated Aliases) | Final Principled Pipeline |
+|---|:---:|:---:|:---:|
+| **Dictionary Hard Hits** | 12,840 | 14,203 | **13,800** |
+| **Hard Coverage** | **74.8%** | **82.8%** | **80.4%** |
+| **Unique Missed Lemmas** | 2,159 | 1,853 | **1,816** |
+| **Universal Tokens Covered** (Digits / Latin) | 0 | 0 | **517** |
+| **Advisory Spelling-Near Context (`≈`)** | None | None | **1,463 tokens** (~44% of misses) |
+| **Effective Information Availability** | ~74.8% | ~82.8% | **>88.9%** of content tokens |
+
+Through universal token handling, multiword splitting, surface fallbacks, and advisory near-match context, the pipeline achieves **80.4% hard coverage** (+960 content tokens over baseline) without fragile orthographic hardcoding, while supplying actionable context or phonetic transliterations for the vast majority of remaining misses.
 
 ---
 
@@ -118,7 +226,7 @@ confidence; the LLM (and later, the fine-tuned model) handles only the semantic 
 
 * * *
 
-#### **C.1 — Tag-to-Gloss Formatting**
+#### C.1 — Tag-to-Gloss Formatting
 
 - Wrote a Python script utilizing `streamparser` to intercept complex Apertium readings (e.g., `<v><tv><ger><nom>`) and
   transform them into human-readable UD-style glosses via a dictionary mapping scheme based on the documentation of
@@ -136,7 +244,7 @@ confidence; the LLM (and later, the fine-tuned model) handles only the semantic 
     - **Malformed-reading guard**: Fixed a data-corruption case where a surface form leaked into a tag slot when a
       reading is dropped entirely if its main lexical unit has no lemma.
 
-#### **C.2 — Key Discovery: Human Annotation Inconsistencies in UyUDT**
+#### C.2 — Key Discovery: Human Annotation Inconsistencies in UyUDT
 
 Testing revealed instances where manual human annotations in UyUDT deviate from strict UD syntactic principles.
 
@@ -148,7 +256,7 @@ Testing revealed instances where manual human annotations in UyUDT deviate from 
   of making errors, current testing suggests they possess strong contextual reasoning abilities and can likely produce
   labels that are **superior to the available human baseline** for historically tricky morpho-syntactic cases.
 
-#### **C.3 — The Fallacy of Filtering by UPOS/XPOS Mismatches**
+#### C.3 — The Fallacy of Filtering by UPOS/XPOS Mismatches
 
 Given the LLM API budget constraints (16,866 ambiguous tokens requires filtering), an intuitive strategy was proposed:
 only relabel tokens where the human `UPOS` tag disagrees with the Apertium-derived `XPOS` tag. **This approach was
@@ -164,7 +272,7 @@ abandoned due to two critical methodological flaws:**
 
 * * *
 
-#### **C.4 — Budget Constraint & Hybrid Strategy**
+#### C.4 — Budget Constraint & Hybrid Strategy
 
 Relabeling all ambiguous words with a Large LLM is **cost-prohibitive**. Strategy: use deterministic, syntax-driven
 rules to resolve a subset for free, sending only the hard cases to the LLM.
@@ -181,7 +289,7 @@ Input → DiaParser (HEAD, DEPREL) + Apertium (readings w/ CG)
       → Fully disambiguated morphology
 ```
 
-#### **C.5 - MUDT-Derived Rule-Based Filter**
+#### C.5 - MUDT-Derived Rule-Based Filter
 
 **Rationale**: The MUDT treebank improves DEPREL/HEAD to better reflect Uyghur grammar. CG3 (`.rlx`) operates only on *
 *linear surface neighborhoods** and cannot see the dependency tree; therefore rules must be applied in a **custom
@@ -219,7 +327,7 @@ surface forms by Apertium, so they never produce the `<p3>` copula candidate —
 predicted DiaParser trees, so parser errors can flip rule decisions; this is the standard distillation gap and is
 accepted.
 
-##### **Rule Filter Results (full dataset)**
+##### *Rule Filter Results (full dataset)*
 
 | Metric                          | Count     |
 |---------------------------------|-----------|
@@ -242,7 +350,7 @@ accepted.
 
 * * *
 
-#### **C.6 — Dataset Builder (assembled pipeline)**
+#### C.6 — Dataset Builder (assembled pipeline)
 
 The dataset-builder integrates all components into the agreed cascade, writing JSONL for direct HuggingFace datasets
 use, with checkpoint/resume and an async LLM phase (OpenRouter).
@@ -281,7 +389,7 @@ structured fields for the encoder:
 
 * * *
 
-#### **C.7 — Finetuning a Model**
+#### C.7 — Finetuning a Model
 
 Model-free baseline:
 
@@ -301,7 +409,7 @@ Model-free baseline:
     first             : 0.7657
 ```
 
-Since the positional bias is very high, we
+---
 
 ##### C7.1 — Encoder Model: XLM-RoBERTa
 
@@ -381,7 +489,9 @@ To ensure robust model selection and scientifically valid reporting, a rigorous 
    ★ OUR MODEL     █████████████████████████████████████▌ 0.92   (test)
 ```
 
-#### **C.8 — Finetuning a Seq2Seq Model: ByT5 & Chain-of-Thought**
+---
+
+##### C.7.2 — Finetuning a Seq2Seq Model: ByT5 & Chain-of-Thought
 
 **Concept**: Reframe morphological disambiguation from discriminative classification to a **generative string-to-string task** operating entirely at the byte level. Crucially, this investigates whether forcing the model to generate a linguistic rationale (Chain-of-Thought) before outputting the answer improves accuracy, and whether that reasoning behavior acts as an inference-time requirement or a training-time regularizer.
 
@@ -455,7 +565,9 @@ The sweep revealed that the optimal learning rate is a property of the *task mod
 
 **Conclusion**: The generative ByT5 Multitask model (~0.92) successfully matches the performance of the discriminative XLM-R classifier while operating entirely at the byte level. Furthermore, `byt5-small` fine-tuned via Multitask nearly bridges the parameter-scale gap (~0.91), demonstrating that reasoning supervision can effectively substitute for pure model capacity.
 
-#### C.9 - Finetuning a Decoder-Only Model - Qwen3.5-0.8B:
+---
+
+##### C.7.3 - Finetuning a Decoder-Only Model - Qwen3.5-0.8B:
 
 **Concept**: Evaluate if a modern, instruct-tuned causal language model can natively perform the morphosyntactic disambiguation task, and test whether explicit reasoning scaffolding (Chain-of-Thought) provides an accuracy lift.
 **Model Choice**: `Qwen3.5-0.8B-Instruct`. Chosen to represent the decoder-only architecture while remaining roughly within the same functional parameter bracket (~0.5–0.8B working capacity) as XLM-RoBERTa-Large and ByT5-Base. *(Note: Qwen’s native "thinking mode" is explicitly disabled to maintain strict parity with the ByT5/XLM-R controlled ablations; RL-based reasoning traces remain outside the current scope).*
@@ -512,7 +624,15 @@ Extensive sweeping (LRs from `5e-6` to `1e-4`) revealed a crucial interaction be
 **Conclusion**:
 At the ~0.8B parameter scale, explicit reasoning supervision still provides a measurable lift — **CoT and Multitask consistently outperformed pure Direct decoding by ~2.5%**. Furthermore, the Multitask formulation proved to be the most resilient setting, offering both high accuracy and the ability to decouple reasoning from the final answer for faster inference if deployed. The plateau at ~91.4% strongly suggests the model is approaching the irreducible noise floor of the LLM-generated pseudo-gold labels.
 
-#### C.10 - Predication Error Analysis - Ceiling:
+---
+
+#### C.8 - Hyperparameter Tuning Results
+
+Result tables for all models in this [file](disambiguater/hyperparam_tuning_result.md)
+
+---
+
+#### C.9 - Predication Error Analysis - Ceiling:
 
 | Model | Approx. errors on 1,010 LLM rows | Shared four-model failures | Fraction of its errors in the shared set |
 |---|---:|---:|---:|
@@ -520,10 +640,6 @@ At the ~0.8B parameter scale, explicit reasoning supervision still provides a me
 | Qwen-0.8B | 87 | 23 | ~26% |
 | Qwen-2B | 78 | 23 | ~29% |
 | XLM-R-large | 100 | 23 | ~23% |
-
-#### C.11 - Hyperparameter Tuning Results
-
-Result tables for all models in this [file](disambiguater/hyperparam_tuning_result.md)
 
 ---
 
@@ -535,10 +651,7 @@ Result File:
     - [Complete Entries in JSONL](dictionary/uig_eng_dict_complete.jsonl)
     - [Complete Entries in SQLite](dictionary/uig_eng_dict_complete.sqlite)
 
-
-## Main Pipeline
-
-
+---
 
 ## Key Resources
 
@@ -551,3 +664,5 @@ Result File:
 | `uig-feats.tsv`    | Mapping: Apertium tags → UD features                                       | [`uig-feats.tsv`](apertium-uig/texts/uig-feats.tsv)                                              |
 | `uig-feat-rel.tsv` | DEPREL–FEAT co-occurrence frequencies                                      | [`uig-feat-rel.tsv`](apertium-uig/texts/uig-feat-rel.tsv)                                        |
 | `build_dataset.py` | Creates the dataset used for finetuning models for the disambiguation task | [`build_dataset.py`](disambiguater/build_dataset.py)                                             |
+| `run_flores_dev.py` | End-to-end FLORES eval harness; persists per-token results + aggregate statistics | [`run_flores_dev.py`](run_flores_dev.py)                                                         |
+| `analyze_misses.py` | Categorizes dictionary misses from a results file (no re-run needed)        | [`stats/analyze_misses.py`](stats/analyze_misses.py)                                             |
