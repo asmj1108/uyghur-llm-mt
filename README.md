@@ -381,20 +381,164 @@ To ensure robust model selection and scientifically valid reporting, a rigorous 
    ★ OUR MODEL     █████████████████████████████████████▌ 0.92   (test)
 ```
 
-#### **C.8 — Finetuning a Seq2Seq Model - ByT5**
+#### **C.8 — Finetuning a Seq2Seq Model: ByT5 & Chain-of-Thought**
 
-**Answer-Only Baseline**:
+**Concept**: Reframe morphological disambiguation from discriminative classification to a **generative string-to-string task** operating entirely at the byte level. Crucially, this investigates whether forcing the model to generate a linguistic rationale (Chain-of-Thought) before outputting the answer improves accuracy, and whether that reasoning behavior acts as an inference-time requirement or a training-time regularizer.
 
+**Architecture & Inference Flow**
 
+```text
+[1] Formatted Prompt
+    [Task Prefix] + "Sentence with <t> target </t>..."
+    "1. Lemma: X | Features: Noun, Accusative"
+    "2. Lemma: X | Features: Noun, Dative"
+                         │
+[2] Encoder-Decoder      ▼
+    ByT5 (Token-free, byte-level sequence processing)
+                         │
+[3] Autoregressive Gen   ▼
+    cot   -> "REASON: ... | ANSWER: 2"
+    direct-> "ANSWER: 2"
+                         │
+[4] String Parsing       ▼
+    Regex extraction -> Matches `ANSWER: \d+`
+                         │
+                         ▼
+                  [ Predicted ID ]
+```
+
+**Implementation Details:**
+
+* **Byte-Level Processing**: ByT5 does not use a subword tokenizer; it processes raw UTF-8 bytes. This is highly advantageous for Uyghur's complex morphophonemics and agglutination, but strictly requires large context windows (Source: 2560 bytes, Target: 448 bytes) to avoid truncation.
+* **Target Grounding**: Similar to XLM-R, the exact target occurrence is isolated using `<t>` and `</t>` markers within the input sentence.
+* **Chain-of-Thought (CoT) Ablation**: To test the efficacy of LLM-distilled reasoning, three distinct training modes were configured:
+    1. **Direct**: Model learns to output only the target ID (e.g., `ANSWER: 1`).
+    2. **CoT**: Model generates the full rationale followed by the ID.
+    3. **Multitask**: The model is trained on a 50/50 mix of `[Direct Answer]` and `[Reasoning]` prefixed prompts. At inference time, it is prompted *only* for the direct answer.
+* **Metric Targeting**: Evaluated strictly on test data leakage prevention, selecting checkpoints relying uniquely on the `cand_acc_llm_based` metric (hard cases), preventing inflation from trivially resolved rules.
+
+**Hyperparameter Sweep & Interaction Discovery**
+
+A rigorous grid search was applied across model scale (`byt5-small` vs `byt5-base`) and the three task formulations. Variables like effective batch size, warmup, and epochs (30) were kept strictly constant to ensure fairness.
+
+*Key Discovery — The Learning Rate / Task Mode Interaction*:
+The sweep revealed that the optimal learning rate is a property of the *task mode*, not the model footprint.
+* **Generative modes** (CoT, Multitask) required aggressive optimization (peaks at `1e-4` to `5e-4`) to learn complex vocabulary distributions.
+* **Classification modes** (Direct) preferred gentle updates (peaks at `3e-5` to `1e-4`), likely due to the limited vocabulary (`ANSWER: [digit]`) risking rapid overfitting at higher rates.
+
+**Sweep Results & Model Selection**
+
+* **Reasoning helps fundamentally**: Across all scales, configurations explicitly trained with reasoning (CoT, Multitask) outperformed Direct Answer baselines by roughly ~4% absolute accuracy.
+* **Multitask is optimal**: The Multitask formulation achieved the highest accuracy while allowing for fast, prefix-triggered "Direct" inference without generating the lengthy rationale. It internalizes reasoning as a *training-time regularizer* rather than an inference-time crutch.
+
+*Best Configuration Found:*
+
+* **Model**: google/byt5-base
+* **Mode**: Multitask
+* **Batch Size**: 8 (effective)
+* **Learning Rate**: 1e-4
+* **Epochs**: 30 (Warmup: 0.10)
+* **Early Stopping Patience**: 8
+
+**Final Result (Hard-case subset: `llm_based`)**
+
+```text
+                  CANDIDATE ACCURACY  (higher = better, llm_based sub-metric)
+   0.0       0.2       0.4       0.6       0.8       1.0
+   |---------|---------|---------|---------|---------|
+   Direct (Small)  █████████████████████████████████▌ 0.86
+   Direct (Base)   ██████████████████████████████████ 0.87
+   CoT (Base)      ███████████████████████████████████▋ 0.91
+   Multitask (Sm.) █████████████████████████████████▌ 0.91 (Highly efficient) 
+   ★ OUR MODEL     ████████████████████████████████████ 0.92 (Multitask Base)
+```
+
+**Conclusion**: The generative ByT5 Multitask model (~0.92) successfully matches the performance of the discriminative XLM-R classifier while operating entirely at the byte level. Furthermore, `byt5-small` fine-tuned via Multitask nearly bridges the parameter-scale gap (~0.91), demonstrating that reasoning supervision can effectively substitute for pure model capacity.
+
+#### C.9 - Finetuning a Decoder-Only Model - Qwen3.5-0.8B:
+
+**Concept**: Evaluate if a modern, instruct-tuned causal language model can natively perform the morphosyntactic disambiguation task, and test whether explicit reasoning scaffolding (Chain-of-Thought) provides an accuracy lift.
+**Model Choice**: `Qwen3.5-0.8B-Instruct`. Chosen to represent the decoder-only architecture while remaining roughly within the same functional parameter bracket (~0.5–0.8B working capacity) as XLM-RoBERTa-Large and ByT5-Base. *(Note: Qwen’s native "thinking mode" is explicitly disabled to maintain strict parity with the ByT5/XLM-R controlled ablations; RL-based reasoning traces remain outside the current scope).*
+
+**Architecture & Inference Flow**
+
+```text
+[1] Prompt Formatting (Instruct Chat Template)
+    "You are an expert... Disambiguate the marked word."
+    "Sentence with the <t> target </t> word."
+    "1. [Candidate A features]"
+    "2. [Candidate B features]"
+                         │
+[2] Causal Decoder (Qwen3.5-0.8B)
+                         │
+[3] Autoregressive Generation
+    (During training, only these output tokens are penalized)
+                         │
+[4] Mode-Specific Output ▼
+    [Direct]    --> "ANSWER: 2"
+    [CoT]       --> "REASON: The word is the subject of... | ANSWER: 2"
+    [Multitask] --> dynamically switches based on system prompt prefix
+```
+
+**Implementation Details:**
+
+* **Completion-Only Loss (Prompt Masking)**: Unlike Seq2Seq models which inherently partition inputs and targets, a decoder-only model processes the entire interaction as one sequence. During training, the prompt segment (instructions, context, candidates) is masked in the label tensor with `-100`. Loss gradients are exclusively computed over the generated target tokens, preventing the model from wasting capacity auto-encoding the prompt.
+* **Target Grounding**: Maintained the exact same `<t>` and `</t>` marker strategy used in ByT5/XLM-R to ensure cross-model task parity.
+* **The Batched Generation Challenge**: Batched autoregressive generation requires **left-padding** so the latest tokens align at the model's sequence boundary. However, in the Qwen architecture, batched left-padding combined with `bfloat16` and Flash Attention 2 (or standard SDPA) generates severe numerical instability and positional masking errors, leading to gibberish text. **Solution**: The custom `CausalGenTrainer` dynamically drops down to standard SDPA and intercepts precision formats safely during the evaluation loop's generation phase, avoiding out-of-bounds attention errors while generating CoT text across batched inputs.
+
+**Experimental Design (Formulation Ablation)**
+
+To isolate whether CoT reasoning provides measurable value at this capability scale, we trained under three strict regimes:
+1. **Direct**: Model learns to immediately emit `ANSWER: X`.
+2. **CoT**: Model learns to emit an extracted LLM rationale followed by the answer.
+3. **Multitask**: 50/50 mixture of the above, governed by appending `[Direct Answer]` or `[Reasoning]` to the prompt.
+
+**Hyperparameter Sweep & Findings**
+
+Extensive sweeping (LRs from `5e-6` to `1e-4`) revealed a crucial interaction between task formulation and the learning rate schedule:
+* **The Direct formulation is highly LR-fragile**: It peaks exactly at low learning rates (`2e-5`) but catastrophically collapses at higher regimes (dropping to ~45% accuracy at `1e-4`). Immediate classification requires gentle weight updates.
+* **The Multitask formulation is highly LR-robust**: Grounded by the reasoning scaffolding, the multitask model remained remarkably stable across the entire sweep, comfortably absorbing higher learning rates.
+
+**Results (Hard/LLM-residual Subset)**
+
+*(Note: Data reflects validation accuracy strictly isolated to `cand_acc_llm_based`, removing trivial rule-based baseline inflation).*
+
+| Task Mode | Best Dev Acc. | Optimal LR |
+|-----------|---------------|------------|
+| Direct    | 0.8881        | 2e-5       |
+| Multitask | **0.9139**    | 1e-4       |
+| CoT       | **0.9139**    | 2e-5       |
+
+**Conclusion**:
+At the ~0.8B parameter scale, explicit reasoning supervision still provides a measurable lift — **CoT and Multitask consistently outperformed pure Direct decoding by ~2.5%**. Furthermore, the Multitask formulation proved to be the most resilient setting, offering both high accuracy and the ability to decouple reasoning from the final answer for faster inference if deployed. The plateau at ~91.4% strongly suggests the model is approaching the irreducible noise floor of the LLM-generated pseudo-gold labels.
+
+#### C.10 - Predication Error Analysis - Ceiling:
+
+| Model | Approx. errors on 1,010 LLM rows | Shared four-model failures | Fraction of its errors in the shared set |
+|---|---:|---:|---:|
+| ByT5-base | 84 | 23 | ~27% |
+| Qwen-0.8B | 87 | 23 | ~26% |
+| Qwen-2B | 78 | 23 | ~29% |
+| XLM-R-large | 100 | 23 | ~23% |
+
+#### C.11 - Hyperparameter Tuning Results
+
+Result tables for all models in this [file](disambiguater/hyperparam_tuning_result.md)
 
 ---
 
-### 3. Dictionary Lookup
+### 3. Dictionary
 
-- No publicly available, electronic Uyghur–English dictionary published in the last ~30 years
-- **TODO**: word-alignment methode to create a dict
+Digitalized the "An Uyghur-English Dictionary" by Henry G. Schwarz.
 
----
+Result File:
+    - [Complete Entries in JSONL](dictionary/uig_eng_dict_complete.jsonl)
+    - [Complete Entries in SQLite](dictionary/uig_eng_dict_complete.sqlite)
+
+
+## Main Pipeline
+
+
 
 ## Key Resources
 
