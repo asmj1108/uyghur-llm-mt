@@ -95,7 +95,7 @@ The parsing pipeline in `parser.py` operates through distinct modular stages:
 ┌──────────────────────────────▼──────────────────────────────┐
 │ 2. Cross-Column / Multi-Page Stitcher                       │
 │    - Reconnects hyphenated word breaks across columns/pages │
-│    - Resolves orphan headwords with bodies on next page     │
+│    - Resolves orphan headwords with bodies on  next page     │
 └──────────────────────────────┬──────────────────────────────┘
                                │
 ┌──────────────────────────────▼──────────────────────────────┐
