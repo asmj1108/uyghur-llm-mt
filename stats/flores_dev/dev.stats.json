@@ -1,0 +1,752 @@
+{
+  "timestamp": "2026-09-17T23:34:15.152325",
+  "total_time_sec": 695.0,
+  "sec_per_sentence": 0.697,
+  "n_sentences": 997,
+  "n_tokens": 19940,
+  "n_punct_tokens": 2781,
+  "n_content_tokens": 17159,
+  "n_empty_lemma_tokens": 0,
+  "dict_hits": 13800,
+  "dict_coverage": 0.8042,
+  "n_unique_missed_lemmas": 1816,
+  "top_missed_lemmas": [
+    {
+      "lemma": "مۇمكىن",
+      "count": 64
+    },
+    {
+      "lemma": "بولغان",
+      "count": 56
+    },
+    {
+      "lemma": "ئى",
+      "count": 54
+    },
+    {
+      "lemma": "بېر",
+      "count": 49
+    },
+    {
+      "lemma": "ئوخشى",
+      "count": 39
+    },
+    {
+      "lemma": "مەدەنىيەت",
+      "count": 27
+    },
+    {
+      "lemma": "يۇقىرى",
+      "count": 24
+    },
+    {
+      "lemma": "ھەرىكەت",
+      "count": 22
+    },
+    {
+      "lemma": "شىركىت",
+      "count": 21
+    },
+    {
+      "lemma": "ھېسابلى",
+      "count": 19
+    },
+    {
+      "lemma": "ئاۋىياتسىيە",
+      "count": 19
+    },
+    {
+      "lemma": "بىرى",
+      "count": 17
+    },
+    {
+      "lemma": "ۋاقت",
+      "count": 15
+    },
+    {
+      "lemma": "ئاتىل",
+      "count": 14
+    },
+    {
+      "lemma": "مۇلازىمەت",
+      "count": 14
+    },
+    {
+      "lemma": "ئالد",
+      "count": 13
+    },
+    {
+      "lemma": "پىروگرامما",
+      "count": 13
+    },
+    {
+      "lemma": "بولغاچ",
+      "count": 13
+    },
+    {
+      "lemma": "ئىچىگە",
+      "count": 13
+    },
+    {
+      "lemma": "لىنزا",
+      "count": 13
+    },
+    {
+      "lemma": "ئۆگەن",
+      "count": 13
+    },
+    {
+      "lemma": "ئەنگلىيە",
+      "count": 12
+    },
+    {
+      "lemma": "پەسل",
+      "count": 12
+    },
+    {
+      "lemma": "پادىشاھ",
+      "count": 12
+    },
+    {
+      "lemma": "ئۆزگىرىش",
+      "count": 11
+    },
+    {
+      "lemma": "سىستېمى",
+      "count": 11
+    },
+    {
+      "lemma": "تەنھەرىكەت",
+      "count": 11
+    },
+    {
+      "lemma": "ئەمەلىيەت",
+      "count": 10
+    },
+    {
+      "lemma": "قارىش",
+      "count": 10
+    },
+    {
+      "lemma": "يەرشارى",
+      "count": 10
+    },
+    {
+      "lemma": "ئۇچرى",
+      "count": 10
+    },
+    {
+      "lemma": "ھېچقانداق",
+      "count": 10
+    },
+    {
+      "lemma": "چۈشىنىش",
+      "count": 10
+    },
+    {
+      "lemma": "تاللاش",
+      "count": 10
+    },
+    {
+      "lemma": "كارتا",
+      "count": 9
+    },
+    {
+      "lemma": "نېمە",
+      "count": 9
+    },
+    {
+      "lemma": "تۈركىيە",
+      "count": 9
+    },
+    {
+      "lemma": "ھېكايە",
+      "count": 8
+    },
+    {
+      "lemma": "جون",
+      "count": 8
+    },
+    {
+      "lemma": "ئەيىبلە",
+      "count": 8
+    },
+    {
+      "lemma": "كومپيۇتېر",
+      "count": 8
+    },
+    {
+      "lemma": "سەۋەبلىك",
+      "count": 8
+    },
+    {
+      "lemma": "بىۋاسىتە",
+      "count": 8
+    },
+    {
+      "lemma": "تەبىئىي",
+      "count": 8
+    },
+    {
+      "lemma": "بىرلا",
+      "count": 8
+    },
+    {
+      "lemma": "دېيىل",
+      "count": 8
+    },
+    {
+      "lemma": "ھادىسى",
+      "count": 8
+    },
+    {
+      "lemma": "كىۋادرات",
+      "count": 8
+    },
+    {
+      "lemma": "سوغۇق",
+      "count": 8
+    },
+    {
+      "lemma": "كەشىپ",
+      "count": 7
+    }
+  ],
+  "top_missed_forms": [
+    {
+      "form": "مۇمكىن",
+      "count": 64
+    },
+    {
+      "form": "بولغان",
+      "count": 56
+    },
+    {
+      "form": "ئىدى",
+      "count": 42
+    },
+    {
+      "form": "يۇقىرى",
+      "count": 19
+    },
+    {
+      "form": "ئاۋىياتسىيە",
+      "count": 19
+    },
+    {
+      "form": "ھېسابلىنىدۇ",
+      "count": 18
+    },
+    {
+      "form": "ئوخشىمىغان",
+      "count": 17
+    },
+    {
+      "form": "بىرى",
+      "count": 15
+    },
+    {
+      "form": "بولغاچقا",
+      "count": 13
+    },
+    {
+      "form": "ئىچىگە",
+      "count": 13
+    },
+    {
+      "form": "مەدەنىيەت",
+      "count": 13
+    },
+    {
+      "form": "بېرىدۇ",
+      "count": 11
+    },
+    {
+      "form": "ئەنگلىيە",
+      "count": 10
+    },
+    {
+      "form": "ھېچقانداق",
+      "count": 10
+    },
+    {
+      "form": "بېرىش",
+      "count": 10
+    },
+    {
+      "form": "ئوخشىمايدۇ",
+      "count": 10
+    },
+    {
+      "form": "شىركىتى",
+      "count": 9
+    },
+    {
+      "form": "ئۆگىنىش",
+      "count": 9
+    },
+    {
+      "form": "سەۋەبلىك",
+      "count": 8
+    },
+    {
+      "form": "بېرىپ",
+      "count": 8
+    },
+    {
+      "form": "بىۋاسىتە",
+      "count": 8
+    },
+    {
+      "form": "تەبىئىي",
+      "count": 8
+    },
+    {
+      "form": "تەنھەرىكەت",
+      "count": 8
+    },
+    {
+      "form": "بىرلا",
+      "count": 8
+    },
+    {
+      "form": "ئەمەلىيەتتە",
+      "count": 8
+    },
+    {
+      "form": "كىۋادرات",
+      "count": 8
+    },
+    {
+      "form": "سوغۇق",
+      "count": 8
+    },
+    {
+      "form": "كەشىپ",
+      "count": 7
+    },
+    {
+      "form": "ئىكەنلىكىنى",
+      "count": 7
+    },
+    {
+      "form": "جون",
+      "count": 7
+    },
+    {
+      "form": "نېمە",
+      "count": 7
+    },
+    {
+      "form": "ئۆزگىرىش",
+      "count": 7
+    },
+    {
+      "form": "شۇنداقلا",
+      "count": 7
+    },
+    {
+      "form": "ئالىي",
+      "count": 7
+    },
+    {
+      "form": "ۋاقتى",
+      "count": 7
+    },
+    {
+      "form": "پەسلىدە",
+      "count": 7
+    },
+    {
+      "form": "جايلاشقان",
+      "count": 7
+    },
+    {
+      "form": "ئاتىلىدۇ",
+      "count": 7
+    },
+    {
+      "form": "پادىشاھ",
+      "count": 7
+    },
+    {
+      "form": "چۈشىنىش",
+      "count": 7
+    },
+    {
+      "form": "قاتارلىقلارنى",
+      "count": 6
+    },
+    {
+      "form": "غا",
+      "count": 6
+    },
+    {
+      "form": "ئاسانلا",
+      "count": 6
+    },
+    {
+      "form": "قالدى",
+      "count": 6
+    },
+    {
+      "form": "تېلېۋىزىيە",
+      "count": 6
+    },
+    {
+      "form": "بەلباغ",
+      "count": 6
+    },
+    {
+      "form": "ئاتىلىدىغان",
+      "count": 6
+    },
+    {
+      "form": "تەرەققىي",
+      "count": 6
+    },
+    {
+      "form": "مۇلازىمىتى",
+      "count": 6
+    },
+    {
+      "form": "ئالدىنى",
+      "count": 6
+    }
+  ],
+  "worst_coverage_sentences": [
+    {
+      "coverage": 0.333,
+      "sentence": "ھادىسىدە زايات يارىلانمىدى."
+    },
+    {
+      "coverage": 0.389,
+      "sentence": "تۈركىيەلىك چولپان سەزەن ئاكسۇ ئىتالىيەلىك يۇقىرى ئاۋازلىق ناخشىچى ئالېسساندرو سافىنا ۋە گىرېتسىيەلىك ناخشىچى ھارىس ئالېك"
+    },
+    {
+      "coverage": 0.4,
+      "sentence": "جەزملەنسە، بۇ بايقاش ئاللېننىڭ سەككىز يىللىق مۇساشى ئىزدىشىگە خاتىمە بېرىدۇ."
+    },
+    {
+      "coverage": 0.438,
+      "sentence": "ئاپتوبۇس مىزۇرىنىڭ ساينت لۇيىستىكى سىكس فلاگسغا ئاللىبۇرۇن بېلەت ئېلىپ بولغان تاماشىبىنلارغا نومۇر كۆرسىتىش ئۈچۈن كېتىۋا"
+    },
+    {
+      "coverage": 0.438,
+      "sentence": "ئۇ ئا ق ش دېڭىز ئارمىيەسىنىڭ يەتتىنچى فىلوتىغا تەقسىملەنگەن بولۇپ، ياپونىيە ناگاساكىدىكى ساسېبو بازىسىدا تۇرغان ئىدى."
+    },
+    {
+      "coverage": 0.444,
+      "sentence": "ئاياغدا، تۈركىيە «ئاناتولىيە ئوتى» ئۇسسۇل گۇرۇپپىسى «تروي» تىياتىرىنى ئورۇنلىدى."
+    },
+    {
+      "coverage": 0.444,
+      "sentence": "لاتۋىيە بىلەن سلوۋاكىيىنىڭ ئىككىلىسى ACTA غا قاتنىشىش قەدىمىنى كېچىكتۈردى."
+    },
+    {
+      "coverage": 0.45,
+      "sentence": "فازا ۋېنېرا (ياكى ئاي) نىڭ قۇياشقا يۈزلەنگەن تەرىپىلا يورۇغانلىقتىن كۆرۈلىدۇ. ۋېنېرانىڭ فازىلىرى كوپېرنىكۇسنىڭ پىلانېتال"
+    },
+    {
+      "coverage": 0.455,
+      "sentence": "قىساسكار دەرىجىلىك مىناغا قارشى بۇ كېمە پالاۋاندىكى پۇئېرتو پرىنسېساغا ماڭغان ئىدى."
+    },
+    {
+      "coverage": 0.455,
+      "sentence": "كۈچ كۆرسىتىش پائالىيەتلىرى يەنە پارىژدا، بۇلغارىيەنىڭ سوفىيە، لىتۋانىيەنىڭ ۋىلنىيۇس، مالتانىڭ ۋالېت، ئېستونىيەنىڭ تاللىن"
+    }
+  ],
+  "disambig_source_counts": {
+    "rule_based_NEG": 2566,
+    "punct": 2781,
+    "fallback": 1480,
+    "model_based": 6342,
+    "dedup": 6611,
+    "rule_based_POS_weak": 154,
+    "rule_based_POS_strong": 6
+  },
+  "disambig_source_fractions": {
+    "rule_based_NEG": 0.1287,
+    "punct": 0.1395,
+    "fallback": 0.0742,
+    "model_based": 0.3181,
+    "dedup": 0.3315,
+    "rule_based_POS_weak": 0.0077,
+    "rule_based_POS_strong": 0.0003
+  },
+  "fallback_forms": [
+    {
+      "form": "غا",
+      "count": 6
+    },
+    {
+      "form": "فىرانسۇز",
+      "count": 6
+    },
+    {
+      "form": "بۇتخانا",
+      "count": 6
+    },
+    {
+      "form": "فوكۇسلۇق",
+      "count": 6
+    },
+    {
+      "form": "شىك",
+      "count": 5
+    },
+    {
+      "form": "ھاۋارايى",
+      "count": 4
+    },
+    {
+      "form": "گېئولوگىيەلىك",
+      "count": 4
+    },
+    {
+      "form": "روك",
+      "count": 4
+    },
+    {
+      "form": "سانسكرىت",
+      "count": 4
+    },
+    {
+      "form": "ئىتالىيەنىڭ",
+      "count": 4
+    },
+    {
+      "form": "كۆپەيتىلگەن",
+      "count": 4
+    },
+    {
+      "form": "گىرافىتى",
+      "count": 4
+    },
+    {
+      "form": "مېتروپىلۇس",
+      "count": 4
+    },
+    {
+      "form": "دا",
+      "count": 3
+    },
+    {
+      "form": "توپچى",
+      "count": 3
+    },
+    {
+      "form": "ئاتلانتا",
+      "count": 3
+    },
+    {
+      "form": "رېيد",
+      "count": 3
+    },
+    {
+      "form": "كوستېللو",
+      "count": 3
+    },
+    {
+      "form": "لوس",
+      "count": 3
+    },
+    {
+      "form": "گە",
+      "count": 3
+    },
+    {
+      "form": "كەمىدە",
+      "count": 3
+    },
+    {
+      "form": "ئورۇنلىدى",
+      "count": 3
+    },
+    {
+      "form": "ئۈچمۈڭگۈزلۈك",
+      "count": 3
+    },
+    {
+      "form": "ۋېنېرانىڭ",
+      "count": 3
+    },
+    {
+      "form": "ئەنگلىيەلىك",
+      "count": 3
+    },
+    {
+      "form": "چارلېز",
+      "count": 3
+    },
+    {
+      "form": "مارا",
+      "count": 3
+    },
+    {
+      "form": "يىغالماسلىق",
+      "count": 3
+    },
+    {
+      "form": "مورىيورىلار",
+      "count": 3
+    },
+    {
+      "form": "دېسنى",
+      "count": 3
+    },
+    {
+      "form": "بۇتخانىنىڭ",
+      "count": 3
+    },
+    {
+      "form": "ئېكۋادور",
+      "count": 3
+    },
+    {
+      "form": "خانگى",
+      "count": 3
+    },
+    {
+      "form": "دىياگنوز",
+      "count": 2
+    },
+    {
+      "form": "راكى",
+      "count": 2
+    },
+    {
+      "form": "كىرىملىك",
+      "count": 2
+    },
+    {
+      "form": "ۋىدال",
+      "count": 2
+    },
+    {
+      "form": "پاناما",
+      "count": 2
+    },
+    {
+      "form": "ئىسلاندىيە",
+      "count": 2
+    },
+    {
+      "form": "خارۋارد",
+      "count": 2
+    },
+    {
+      "form": "شيې",
+      "count": 2
+    },
+    {
+      "form": "ئوۋېچكىن",
+      "count": 2
+    },
+    {
+      "form": "ھۇجۇملۇق",
+      "count": 2
+    },
+    {
+      "form": "پاس",
+      "count": 2
+    },
+    {
+      "form": "پىكېت",
+      "count": 2
+    },
+    {
+      "form": "سىنگاپور",
+      "count": 2
+    },
+    {
+      "form": "فرېد",
+      "count": 2
+    },
+    {
+      "form": "كىلومېتىر/سائەت",
+      "count": 2
+    },
+    {
+      "form": "گۋىننېس",
+      "count": 2
+    },
+    {
+      "form": "ئىرېلاندىيە",
+      "count": 2
+    }
+  ],
+  "n_ambiguous_tokens": 9068,
+  "ambiguous_token_fraction": 0.5285,
+  "candidate_count_distribution": {
+    "1": 10872,
+    "2": 5221,
+    "3": 2079,
+    "4": 819,
+    "5": 345,
+    "6": 430,
+    "7": 99,
+    "8": 17,
+    "9": 37,
+    "10": 1,
+    "11": 4,
+    "12": 14,
+    "14": 1,
+    "15": 1
+  },
+  "pos_distribution": {
+    "Noun": 7755,
+    "Standard verb": 3145,
+    "Punctuation": 2781,
+    "Adjective": 2255,
+    "Postposition": 640,
+    "Numeral": 600,
+    "Adverb": 566,
+    "Pronoun": 556,
+    "Co-ordinating conjunction": 520,
+    "Proper noun": 330,
+    "Determiner": 302,
+    "Future verbal adjective": 185,
+    "BARB": 123,
+    "Copula": 65,
+    "Conjunctive adverb": 48,
+    "Comparative": 24,
+    "Sub-ordinating conjunction": 19,
+    "Past gerund": 8,
+    "Third person plural possessive": 8,
+    "Interjection": 3,
+    "Aorist": 3,
+    "PROG2": 2,
+    "Altres": 2
+  },
+  "deprel_distribution": {
+    "punct": 2784,
+    "amod": 2292,
+    "nmod": 1789,
+    "nsubj": 1716,
+    "obj": 1535,
+    "conj": 1082,
+    "root": 997,
+    "advmod": 991,
+    "advcl": 902,
+    "case:poss": 760,
+    "case:loc": 711,
+    "case:dat": 688,
+    "cc": 687,
+    "nummod": 590,
+    "det": 482,
+    "fixed": 458,
+    "cop": 341,
+    "case:abl": 333,
+    "aux": 311,
+    "post": 203,
+    "instr:post": 198,
+    "appos": 46,
+    "discourse": 29,
+    "cop:zero": 14,
+    "case": 1
+  },
+  "translated": false,
+  "n_translation_errors": null,
+  "translation_error_rate": null
+}
