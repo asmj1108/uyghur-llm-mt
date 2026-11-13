@@ -1,0 +1,366 @@
+{
+  "models_scored": [
+    "Qwen3.5-9B",
+    "Gemma-4-E4B"
+  ],
+  "scores": {
+    "Qwen3.5-9B|C0": {
+      "chrfpp": 47.63,
+      "comet": 0.8544
+    },
+    "Qwen3.5-9B|C3L": {
+      "chrfpp": 48.32,
+      "comet": 0.8575
+    },
+    "Qwen3.5-9B|E4-A": {
+      "chrfpp": 43.56,
+      "comet": 0.8216
+    },
+    "Qwen3.5-9B|E4-A2": {
+      "chrfpp": 45.14,
+      "comet": 0.8236
+    },
+    "Qwen3.5-9B|E4-W": {
+      "chrfpp": 43.86,
+      "comet": 0.814
+    },
+    "Gemma-4-E4B|C0": {
+      "chrfpp": 25.71,
+      "comet": 0.6341
+    },
+    "Gemma-4-E4B|C3L": {
+      "chrfpp": 42.86,
+      "comet": 0.8078
+    },
+    "Gemma-4-E4B|E4-A": {
+      "chrfpp": 38.12,
+      "comet": 0.7731
+    },
+    "Gemma-4-E4B|E4-A2": {
+      "chrfpp": 38.77,
+      "comet": 0.7705
+    },
+    "Gemma-4-E4B|E4-W": {
+      "chrfpp": 39.45,
+      "comet": 0.7759
+    }
+  },
+  "contrasts": {
+    "Qwen3.5-9B|E4-W−C3L": {
+      "desc": "E4-W − C3L (word-syntax pull vs best push)",
+      "delta": -4.46,
+      "ci_lo": -5.35,
+      "ci_hi": -3.55,
+      "p": 0.0
+    },
+    "Qwen3.5-9B|E4-A2−C3L": {
+      "desc": "E4-A2 − C3L (budget-raised pull vs best push)",
+      "delta": -3.17,
+      "ci_lo": -3.98,
+      "ci_hi": -2.37,
+      "p": 0.0
+    },
+    "Qwen3.5-9B|E4-W−E4-A": {
+      "desc": "E4-W − E4-A (granularity + budget)",
+      "delta": 0.3,
+      "ci_lo": -0.85,
+      "ci_hi": 1.53,
+      "p": 0.6268
+    },
+    "Qwen3.5-9B|E4-W−E4-A2": {
+      "desc": "E4-W − E4-A2 (word-level vs sentence-level syntax)",
+      "delta": -1.28,
+      "ci_lo": -2.19,
+      "ci_hi": -0.37,
+      "p": 0.0052
+    },
+    "Qwen3.5-9B|E4-A2−E4-A": {
+      "desc": "E4-A2 − E4-A (raised budget vs fixed 24 calls)",
+      "delta": 1.59,
+      "ci_lo": 0.57,
+      "ci_hi": 2.6,
+      "p": 0.0012
+    },
+    "Gemma-4-E4B|E4-W−C3L": {
+      "desc": "E4-W − C3L (word-syntax pull vs best push)",
+      "delta": -3.41,
+      "ci_lo": -4.0,
+      "ci_hi": -2.84,
+      "p": 0.0
+    },
+    "Gemma-4-E4B|E4-A2−C3L": {
+      "desc": "E4-A2 − C3L (budget-raised pull vs best push)",
+      "delta": -4.08,
+      "ci_lo": -4.72,
+      "ci_hi": -3.45,
+      "p": 0.0
+    },
+    "Gemma-4-E4B|E4-W−E4-A": {
+      "desc": "E4-W − E4-A (granularity + budget)",
+      "delta": 1.33,
+      "ci_lo": 0.53,
+      "ci_hi": 2.12,
+      "p": 0.002
+    },
+    "Gemma-4-E4B|E4-W−E4-A2": {
+      "desc": "E4-W − E4-A2 (word-level vs sentence-level syntax)",
+      "delta": 0.68,
+      "ci_lo": 0.24,
+      "ci_hi": 1.13,
+      "p": 0.0012
+    },
+    "Gemma-4-E4B|E4-A2−E4-A": {
+      "desc": "E4-A2 − E4-A (raised budget vs fixed 24 calls)",
+      "delta": 0.66,
+      "ci_lo": -0.17,
+      "ci_hi": 1.47,
+      "p": 0.1152
+    }
+  },
+  "behavior": {
+    "Qwen3.5-9B|E4-A": {
+      "n": 997,
+      "episodes_with_calls": 408,
+      "calls_mean": 7.8,
+      "calls_p95": 24.0,
+      "rounds_mean": 2.7,
+      "budget_forced": 145,
+      "round_cap_forced": 0,
+      "context_overflow": 0,
+      "parse_fail": 0,
+      "skipped": 334,
+      "unresolved": 34,
+      "tool_mix": {
+        "get_word_list": 391,
+        "get_gloss": 5712,
+        "get_lemma": 1112,
+        "get_near_matches": 321,
+        "get_features": 196,
+        "get_syntax": 67
+      },
+      "tokens_in_mean": 5524,
+      "tokens_out_mean": 287
+    },
+    "Qwen3.5-9B|E4-A2": {
+      "n": 997,
+      "episodes_with_calls": 410,
+      "calls_mean": 6.7,
+      "calls_p95": 26.0,
+      "rounds_mean": 3.0,
+      "budget_forced": 37,
+      "round_cap_forced": 0,
+      "context_overflow": 0,
+      "parse_fail": 0,
+      "skipped": 28,
+      "unresolved": 61,
+      "tool_mix": {
+        "get_word_list": 396,
+        "get_gloss": 4594,
+        "get_lemma": 975,
+        "get_near_matches": 372,
+        "get_features": 275,
+        "get_syntax": 90
+      },
+      "tokens_in_mean": 6223,
+      "tokens_out_mean": 325
+    },
+    "Qwen3.5-9B|E4-W": {
+      "n": 997,
+      "episodes_with_calls": 373,
+      "calls_mean": 6.2,
+      "calls_p95": 26.0,
+      "rounds_mean": 2.8,
+      "budget_forced": 49,
+      "round_cap_forced": 0,
+      "context_overflow": 0,
+      "parse_fail": 0,
+      "skipped": 66,
+      "unresolved": 44,
+      "tool_mix": {
+        "get_word_list": 357,
+        "get_gloss": 4096,
+        "get_lemma": 889,
+        "get_near_matches": 374,
+        "get_syntax": 408,
+        "get_features": 95
+      },
+      "tokens_in_mean": 6268,
+      "tokens_out_mean": 313
+    },
+    "Gemma-4-E4B|E4-A": {
+      "n": 997,
+      "episodes_with_calls": 184,
+      "calls_mean": 1.5,
+      "calls_p95": 8.0,
+      "rounds_mean": 2.5,
+      "budget_forced": 0,
+      "round_cap_forced": 0,
+      "context_overflow": 0,
+      "parse_fail": 0,
+      "skipped": 0,
+      "unresolved": 0,
+      "tool_mix": {
+        "get_word_list": 183,
+        "get_gloss": 1266,
+        "get_syntax": 5,
+        "get_near_matches": 6,
+        "get_lemma": 9
+      },
+      "tokens_in_mean": 3103,
+      "tokens_out_mean": 70
+    },
+    "Gemma-4-E4B|E4-A2": {
+      "n": 997,
+      "episodes_with_calls": 197,
+      "calls_mean": 2.3,
+      "calls_p95": 12.0,
+      "rounds_mean": 3.3,
+      "budget_forced": 1,
+      "round_cap_forced": 0,
+      "context_overflow": 0,
+      "parse_fail": 0,
+      "skipped": 0,
+      "unresolved": 0,
+      "tool_mix": {
+        "get_word_list": 196,
+        "get_gloss": 1950,
+        "get_syntax": 43,
+        "get_lemma": 41,
+        "get_near_matches": 19,
+        "get_features": 6
+      },
+      "tokens_in_mean": 4538,
+      "tokens_out_mean": 88
+    },
+    "Gemma-4-E4B|E4-W": {
+      "n": 997,
+      "episodes_with_calls": 64,
+      "calls_mean": 0.7,
+      "calls_p95": 10.0,
+      "rounds_mean": 1.7,
+      "budget_forced": 0,
+      "round_cap_forced": 0,
+      "context_overflow": 0,
+      "parse_fail": 0,
+      "skipped": 0,
+      "unresolved": 0,
+      "tool_mix": {
+        "get_word_list": 63,
+        "get_gloss": 583,
+        "get_lemma": 25,
+        "get_syntax": 30,
+        "get_near_matches": 5,
+        "get_features": 3
+      },
+      "tokens_in_mean": 2277,
+      "tokens_out_mean": 49
+    }
+  },
+  "syntax_adoption": {
+    "Qwen3.5-9B|E4-A": {
+      "syntax_calls": 67,
+      "episodes_with_syntax": 67,
+      "calls_per_engaged_ep": 1.0,
+      "distinct_tokens_per_engaged_ep": 0.0,
+      "resolution": {
+        "unresolved": 67
+      }
+    },
+    "Qwen3.5-9B|E4-A2": {
+      "syntax_calls": 90,
+      "episodes_with_syntax": 90,
+      "calls_per_engaged_ep": 1.0,
+      "distinct_tokens_per_engaged_ep": 0.0,
+      "resolution": {
+        "unresolved": 90
+      }
+    },
+    "Qwen3.5-9B|E4-W": {
+      "syntax_calls": 408,
+      "episodes_with_syntax": 87,
+      "calls_per_engaged_ep": 4.7,
+      "distinct_tokens_per_engaged_ep": 4.7,
+      "resolution": {
+        "token_id": 400,
+        "exact": 8
+      }
+    },
+    "Gemma-4-E4B|E4-A": {
+      "syntax_calls": 5,
+      "episodes_with_syntax": 5,
+      "calls_per_engaged_ep": 1.0,
+      "distinct_tokens_per_engaged_ep": 0.0,
+      "resolution": {
+        "unresolved": 5
+      }
+    },
+    "Gemma-4-E4B|E4-A2": {
+      "syntax_calls": 43,
+      "episodes_with_syntax": 43,
+      "calls_per_engaged_ep": 1.0,
+      "distinct_tokens_per_engaged_ep": 0.0,
+      "resolution": {
+        "unresolved": 43
+      }
+    },
+    "Gemma-4-E4B|E4-W": {
+      "syntax_calls": 30,
+      "episodes_with_syntax": 20,
+      "calls_per_engaged_ep": 1.5,
+      "distinct_tokens_per_engaged_ep": 1.5,
+      "resolution": {
+        "token_id": 30
+      }
+    }
+  },
+  "coverage": {
+    "Qwen3.5-9B": {
+      "mean": 0.0544,
+      "mean_content": 0.0538,
+      "zero_call_eps": 910
+    },
+    "Gemma-4-E4B": {
+      "mean": 0.0117,
+      "mean_content": 0.0113,
+      "zero_call_eps": 977
+    }
+  },
+  "coverage_bin_chrf": {
+    "Qwen3.5-9B": {
+      "none": {
+        "n": 910,
+        "chrf_mean": 46.15
+      },
+      "spot": {
+        "n": 8,
+        "chrf_mean": 43.52
+      },
+      "partial": {
+        "n": 54,
+        "chrf_mean": 39.09
+      },
+      "assembly": {
+        "n": 25,
+        "chrf_mean": 42.22
+      }
+    },
+    "Gemma-4-E4B": {
+      "none": {
+        "n": 977,
+        "chrf_mean": 39.49
+      },
+      "spot": {
+        "n": 4,
+        "chrf_mean": 38.29
+      },
+      "partial": {
+        "n": 12,
+        "chrf_mean": 19.64
+      },
+      "assembly": {
+        "n": 4,
+        "chrf_mean": 14.83
+      }
+    }
+  }
+}

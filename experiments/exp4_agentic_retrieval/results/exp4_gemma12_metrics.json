@@ -1,0 +1,44 @@
+{
+  "runs": [
+    {
+      "path": "experiments/exp3_cross_family/results/gemma-4-12b-it_c0_baseline.results.jsonl",
+      "label": "Gemma-4-12B C0",
+      "n": 997,
+      "n_failed": 0,
+      "chrfpp": 45.62,
+      "comet": 0.8253
+    },
+    {
+      "path": "experiments/exp3_cross_family/results/gemma-4-12b-it_c7_full.results.jsonl",
+      "label": "Gemma-4-12B C7",
+      "n": 997,
+      "n_failed": 0,
+      "chrfpp": 46.69,
+      "comet": 0.835
+    },
+    {
+      "path": "experiments/exp3_cross_family/results/gemma-4-12b-it_c3_dict_lemma.results.jsonl",
+      "label": "Gemma-4-12B C3L",
+      "n": 997,
+      "n_failed": 0,
+      "chrfpp": 47.45,
+      "comet": 0.8412
+    },
+    {
+      "path": "experiments/exp4_agentic_retrieval/results/gemma-4-12b-it_e4-a.results.jsonl",
+      "label": "Gemma-4-12B E4-A",
+      "n": 997,
+      "n_failed": 0,
+      "chrfpp": 47.12,
+      "comet": 0.8364
+    },
+    {
+      "path": "experiments/exp4_agentic_retrieval/results/gemma-4-12b-it_e4-at.results.jsonl",
+      "label": "Gemma-4-12B E4-AT",
+      "n": 997,
+      "n_failed": 0,
+      "chrfpp": 47.44,
+      "comet": 0.8348
+    }
+  ]
+}

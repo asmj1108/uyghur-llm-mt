@@ -30,7 +30,7 @@ from experiments.common.prompt_variants import (  # noqa: E402
 from experiments.common import checkpoint as ckpt  # noqa: E402
 from experiments.common import vllm_runner  # noqa: E402
 from experiments.exp4_agentic_retrieval.tool_server import (  # noqa: E402
-    TOOLS_SCHEMA, LEAN_TOOLS, load_server,
+    TOOLS_SCHEMA, LEAN_TOOLS, WORD_SYNTAX_TOOLS, load_server,
 )
 from experiments.exp4_agentic_retrieval.agent_loop import (  # noqa: E402
     AgentRunner, RECOMMENDED_SAMPLING, episode_record,
@@ -68,6 +68,17 @@ CONDITIONS = {
     # Greedy, thinking off, same caps as E4-A for a clean protocol contrast.
     "E4-DF": {"tools": TOOLS_SCHEMA, "thinking": False, "sampling": None,
                "max_tokens": None, "draft_first": True},
+    # Word-level syntax follow-up (see DESIGN_word_syntax.md). E4-A2 = the
+    # E4-A toolset at the raised budget (α=2, floor 8, caps 64/12 passed on
+    # the command line); E4-W = same six tools but get_syntax is word-
+    # addressed (WORD_SYNTAX_TOOLS, served by the granularity=word server).
+    # E4-W − E4-A2 isolates granularity; E4-A2 − E4-A isolates budget.
+    "E4-A2": {"tools": TOOLS_SCHEMA, "thinking": False, "sampling": None,
+               "max_tokens": None, "draft_first": False,
+               "word_syntax": False},
+    "E4-W": {"tools": WORD_SYNTAX_TOOLS, "thinking": False, "sampling": None,
+              "max_tokens": None, "draft_first": False,
+              "word_syntax": True},
 }
 
 # guardrails calibrated in Phase 0 (see DESIGN.md / ANALYSIS.md): log-only
@@ -202,6 +213,8 @@ def main():
     refs = load_references(DEV_REF)
     assert len(records) == len(refs)
     server = load_server()
+    servers = {"sentence": server,
+               "word": load_server(syntax_granularity="word")}
 
     if args.mode == "phase0":
         caps = {"max_calls": P0["max_calls"], "max_rounds": P0["max_rounds"],
@@ -234,8 +247,10 @@ def main():
         _LLM = vllm_runner.make_llm(model_id, max_model_len=args.max_model_len,
                                      gpu_memory_utilization=args.gpu_mem_util)
         for condition in args.conditions:
+            spec = CONDITIONS[condition]
             run_model_condition(args, model_id, condition, records, refs,
-                                server, caps)
+                                servers["word"] if spec.get("word_syntax")
+                                else servers["sentence"], caps)
         vllm_runner.free_llm(_LLM)
         _LLM = None
 

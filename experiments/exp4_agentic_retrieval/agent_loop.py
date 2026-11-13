@@ -26,6 +26,7 @@ PARSER_BY_MODEL = {
     "meta-llama/Llama-3.1-8B-Instruct": "llama3_json",
     "mistralai/Ministral-3-8B-Instruct-2512-BF16": "mistral",
     "google/gemma-4-E4B-it": "gemma4",
+    "google/gemma-4-12b-it": "gemma4",   # same family/parser as E4B
 }
 
 # Qwen3.5: thinking force-disabled (same regime as every prior experiment)
@@ -38,6 +39,7 @@ CHAT_KWARGS_BY_MODEL = {
 THINK_MARKER_BY_MODEL = {
     "Qwen/Qwen3.5-9B": "**END**",
     "google/gemma-4-E4B-it": "<channel|>",
+    "google/gemma-4-12b-it": "<channel|>",  # same Gemma-4 thinking channel
 }
 
 # Llama-3.1's chat template only supports a single tool call per assistant

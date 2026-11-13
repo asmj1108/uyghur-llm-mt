@@ -301,3 +301,49 @@ appends to `ANALYSIS.md`.
 ```bash
 bash experiments/exp4_agentic_retrieval/run_exp4_df.sh   # batch-safe
 ```
+
+### Exp 4 follow-up: word-level `get_syntax` (`run_exp4_word.sh` / `score_exp4_word.py`)
+
+E4-W converts the sentence-level syntax digest to a word-addressed tool
+(local dependency context: own arc + head's role + dependents; no head
+chain); E4-A2 reruns the E4-A toolset at a raised budget (proportional α=2,
+floor 8, 64 calls / 12 rounds — E4-A's fixed 24-call cap bound Ministral in
+751/997 episodes). E4-W − E4-A2 isolates granularity, E4-A2 − E4-A the
+budget. Models: Qwen3.5-9B, Gemma-4-E4B, Ministral-3-8B; thinking off.
+Scorer adds syntax-adoption stats and edge-coverage replay (spot/partial/
+assembly bins × per-sentence chrF). Writes
+`results/exp4_word_{metrics.json,summary.md}` + appends to `ANALYSIS.md`.
+Design: `DESIGN_word_syntax.md`.
+
+```bash
+bash experiments/exp4_agentic_retrieval/run_exp4_word.sh   # batch-safe, ~9-14 h GPU
+```
+
+### Exp 4 extension: Gemma-4-12B agentic (`run_exp4_gemma12.sh`)
+
+Gemma-4-12B E4-A + E4-AT (the E4B "activator" follow-up at competent scale)
+plus the missing C3L static baseline. Result: first model where pull ties
+the best push (E4-A − C3L −0.33 n.s., E4-AT − C3L −0.02 n.s.); thinking and
+retrieval substitute, not stack. Writes
+`results/exp4_gemma12_{metrics.json,summary.md}` + an `ANALYSIS.md` section.
+
+```bash
+bash experiments/exp4_agentic_retrieval/run_exp4_gemma12.sh   # batch-safe, ~3-6 h GPU
+```
+
+## Experiment 5 — thinking mode × C3L (`exp5_thinking_static/`)
+
+Does native thinking substitute for, complement, or interfere with the pushed
+lemma-keyed glosses? 2×2(+1) grid per model over FLORES dev: arm A greedy
+(reuse; Qwen-27B C3L generated here), arm S thinking-OFF + recommended
+sampling (deconfound), arm T thinking-ON (Qwen C0 reused from Exp2b). Models:
+Qwen3.5-9B/27B, Gemma-4-E4B. Headline contrast: the interaction
+[T.C3L−T.C0] − [S.C3L−S.C0]. Scorer adds thinking diagnostics (Exp2b
+calibration) and a gloss-citation analysis: do the pushed glosses get
+reasoned about (targets = first-sense keyword + Latin lemma per dict-covered
+token; C0-T is the never-shown control). Design: `exp5_thinking_static/DESIGN.md`.
+
+```bash
+bash experiments/exp5_thinking_static/run_exp5.sh   # batch-safe, ~5-7 h GPU;
+# Gemma static-thinking smoke gate aborts before the full run if unconfirmed
+```

@@ -41,6 +41,36 @@ _POS_WORDS = {
 
 _ZERO_WIDTH = dict.fromkeys(map(ord, "\u200b\u200c\u200d\u200e\u200f\u0640"))
 
+# Short English glosses for the frequent UD relations in the MUDT analyses
+# of FLORES dev (punct/amod/nmod/nsubj/obj/conj/root/advmod/advcl/case:*/cc/
+# nummod/det/fixed/cop/aux/post cover ~98% of all arcs). Raw deprel fallback.
+_DEPREL_GLOSS = {
+    "root": "main predicate of the clause",
+    "nsubj": "subject", "csubj": "subject",
+    "obj": "object", "iobj": "indirect object",
+    "obl": "oblique phrase",
+    "advcl": "adverbial clause",
+    "advmod": "adverbial modifier",
+    "nmod": "noun modifier", "amod": "adjectival modifier",
+    "nummod": "numeral modifier",
+    "det": "determiner",
+    "case": "case marker", "case:poss": "possessive case marker",
+    "case:loc": "locative case marker", "case:dat": "dative case marker",
+    "case:abl": "ablative case marker",
+    "cc": "coordinating conjunction", "conj": "conjoined element",
+    "aux": "auxiliary verb", "cop": "copula", "cop:zero": "copula",
+    "post": "postposition", "instr:post": "postposition",
+    "fixed": "fixed multiword expression",
+    "punct": "punctuation",
+    "appos": "apposition", "discourse": "discourse element",
+}
+
+
+def _rel_gloss(rel: str) -> str:
+    """'obj' -> 'obj (object)'; unmapped relations pass through unchanged."""
+    gloss = _DEPREL_GLOSS.get(rel) or _DEPREL_GLOSS.get(rel.split(":")[0])
+    return f"{rel} ({gloss})" if gloss else rel
+
 
 def _norm(s: str) -> str:
     """NFC + strip zero-width/tatweel — guards Arabic-script echo corruption."""
@@ -204,6 +234,34 @@ TOOLS_SCHEMA = [
 TOOLS_BY_NAME = {t["function"]["name"]: t for t in TOOLS_SCHEMA}
 LEAN_TOOLS = [TOOLS_BY_NAME[n] for n in ("get_word_list", "get_gloss")]
 
+# E4-W follow-up (see DESIGN_word_syntax.md): the same six tools, but
+# get_syntax is word-addressed — local dependency context per word instead
+# of the whole-sentence clause digest. get_syntax REPLACES (not joins) the
+# sentence-level tool: tool count stays 6 (E4-A vs E4-B showed more tools
+# hurt Gemma).
+WORD_SYNTAX_TOOLS = [
+    {
+        "type": "function",
+        "function": {
+            "name": "get_syntax",
+            "description": (
+                "Takes ONE word of the source sentence (copy it exactly), or "
+                "its token number as token_id. Returns that word's place in "
+                "the sentence's dependency structure: its grammatical "
+                "relation, the word it depends on (and that word's own "
+                "role), and its own dependents with their relations. Use "
+                "this to see how a word fits structurally — for example "
+                "which verb a modifier or an argument belongs to."),
+            "parameters": {"type": "object",
+                           "properties": {"word": _WORD_PARAM,
+                                          "token_id": _ID_PARAM},
+                           "additionalProperties": False},
+        },
+    }
+    if t["function"]["name"] == "get_syntax" else t
+    for t in TOOLS_SCHEMA
+]
+
 
 # ---------------------------------------------------------------------------
 # Server
@@ -211,8 +269,12 @@ LEAN_TOOLS = [TOOLS_BY_NAME[n] for n in ("get_word_list", "get_gloss")]
 class ToolServer:
     """Executes tool calls against the persisted per-sentence analysis."""
 
-    def __init__(self, records: List[dict]):
+    def __init__(self, records: List[dict],
+                 syntax_granularity: str = "sentence"):
         self.records = records  # dev.results.jsonl records (per_token lists)
+        # "sentence": get_syntax() -> whole-sentence clause digest (E4-A)
+        # "word":      get_syntax(word) -> local dependency context (E4-W)
+        self.syntax_granularity = syntax_granularity
 
     # ---- word resolution ---------------------------------------------------
     def resolve(self, sent_idx: int, word: Optional[str],
@@ -283,7 +345,7 @@ class ToolServer:
             log["result"] = "word_list"
             return self._word_list(toks), log
 
-        if name == "get_syntax":
+        if name == "get_syntax" and self.syntax_granularity == "sentence":
             lines = _clause_lines(toks, [], use_morph=False, use_dict=False)
             log["result"] = "syntax"
             return "\n".join(lines), log
@@ -359,16 +421,62 @@ class ToolServer:
             log["result"] = "features"
             return f"{header} — {_morph_summary(t)}", log
 
+        if name == "get_syntax":  # word granularity (E4-W)
+            log["result"] = "syntax_word"
+            return self._word_syntax(toks, t), log
+
         log["result"] = "unknown_tool"
         return (f"Unknown tool '{name}'. Available tools: "
                 f"{', '.join(TOOLS_BY_NAME)}"), log
 
 
-def load_server(records_path: str = FLORES_RESULTS_PATH) -> ToolServer:
+    def _word_syntax(self, toks: List[dict], t: dict) -> str:
+        """E4-W: local dependency context for one resolved token.
+
+        Presents the queried word's arc to its head AND the head's own
+        deprel (one extra level of clausal context — knowing the head is
+        `root` vs `advcl` tells the model whether it is inside a
+        subordinate clause), plus each dependent's arc. No transitive
+        head chain: full-tree knowledge costs O(N) calls by design
+        (DESIGN_word_syntax.md §2).
+        """
+        by_id = {x["id"]: x for x in toks}
+        deps = [d for d in toks
+                if d["head_id"] == t["id"] and d["id"] != t["id"]]
+        lines = []
+        if t["head_id"] == 0:
+            lines.append(f"Token #{t['id']}: {t['form']} — "
+                         f"root ({_DEPREL_GLOSS['root']})")
+        else:
+            h = by_id.get(t["head_id"])
+            lines.append(f"Token #{t['id']}: {t['form']}")
+            if h is None:
+                lines.append(f"head: #{t['head_id']} (not available) — "
+                             f"{t['form']} is {_rel_gloss(t['deprel'])} "
+                             f"of it")
+            else:
+                head_role = (f"{h['form']} is {_rel_gloss(h['deprel'])}"
+                             if h["deprel"] != "root"
+                             else f"{h['form']} is root "
+                                  f"({_DEPREL_GLOSS['root']})")
+                lines.append(f"head: #{h['id']} {h['form']} — "
+                             f"{t['form']} is {_rel_gloss(t['deprel'])} "
+                             f"of it; {head_role}")
+        if deps:
+            dep_s = ", ".join(f"#{d['id']} {d['form']} ({d['deprel']} "
+                               f"of {t['form']})" for d in deps)
+            lines.append(f"dependents: {dep_s}")
+        else:
+            lines.append("dependents: (none)")
+        return "\n".join(lines)
+
+
+def load_server(records_path: str = FLORES_RESULTS_PATH,
+                syntax_granularity: str = "sentence") -> ToolServer:
     records = []
     with open(records_path, encoding="utf-8") as f:
         for line in f:
             line = line.strip()
             if line:
                 records.append(json.loads(line))
-    return ToolServer(records)
+    return ToolServer(records, syntax_granularity=syntax_granularity)

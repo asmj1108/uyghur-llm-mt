@@ -529,3 +529,222 @@ register-preservation law explains all of it: any protocol step that
 interposes discourse between the model and the translation output (tool
 dialog, reasoning, verification discussion) taxes quality by more than the
 retrieved information pays.
+
+## Experiment 4 follow-up — word-level get_syntax (E4-W) and budget raise (E4-A2)
+
+### Quality
+
+| Model | Cond | chrF++ | COMET |
+|---|---|---|---|
+| Qwen3.5-9B | C0 | 47.63 | 0.8544 |
+| Qwen3.5-9B | C3L | 48.32 | 0.8575 |
+| Qwen3.5-9B | E4-A | 43.56 | 0.8216 |
+| Qwen3.5-9B | E4-A2 | 45.14 | 0.8236 |
+| Qwen3.5-9B | E4-W | 43.86 | 0.8140 |
+| Gemma-4-E4B | C0 | 25.71 | 0.6341 |
+| Gemma-4-E4B | C3L | 42.86 | 0.8078 |
+| Gemma-4-E4B | E4-A | 38.12 | 0.7731 |
+| Gemma-4-E4B | E4-A2 | 38.77 | 0.7705 |
+| Gemma-4-E4B | E4-W | 39.45 | 0.7759 |
+
+### Contrasts (paired bootstrap, chrF++)
+
+| Model | Contrast | Δ [95% CI] | p |
+|---|---|---|---|
+| Qwen3.5-9B | E4-W − C3L (word-syntax pull vs best push) | -4.46 [-5.35, -3.55] ✱ | 0.0000 |
+| Qwen3.5-9B | E4-A2 − C3L (budget-raised pull vs best push) | -3.17 [-3.98, -2.37] ✱ | 0.0000 |
+| Qwen3.5-9B | E4-W − E4-A (granularity + budget) | +0.30 [-0.85, +1.53] | 0.6268 |
+| Qwen3.5-9B | E4-W − E4-A2 (word-level vs sentence-level syntax) | -1.28 [-2.19, -0.37] ✱ | 0.0052 |
+| Qwen3.5-9B | E4-A2 − E4-A (raised budget vs fixed 24 calls) | +1.59 [+0.57, +2.60] ✱ | 0.0012 |
+| Gemma-4-E4B | E4-W − C3L (word-syntax pull vs best push) | -3.41 [-4.00, -2.84] ✱ | 0.0000 |
+| Gemma-4-E4B | E4-A2 − C3L (budget-raised pull vs best push) | -4.08 [-4.72, -3.45] ✱ | 0.0000 |
+| Gemma-4-E4B | E4-W − E4-A (granularity + budget) | +1.33 [+0.53, +2.12] ✱ | 0.0020 |
+| Gemma-4-E4B | E4-W − E4-A2 (word-level vs sentence-level syntax) | +0.68 [+0.24, +1.13] ✱ | 0.0012 |
+| Gemma-4-E4B | E4-A2 − E4-A (raised budget vs fixed 24 calls) | +0.66 [-0.17, +1.47] | 0.1152 |
+
+### Agent behavior
+
+| Model | Cond | ep w/ calls | calls/ep | p95 | rounds/ep | budget-forced | skipped | unresolved | tok in/out |
+|---|---|---|---|---|---|---|---|---|---|
+| Qwen3.5-9B | E4-A | 408/997 | 7.8 | 24 | 2.7 | 145 | 334 | 34 | 5524/287 |
+| Qwen3.5-9B | E4-A2 | 410/997 | 6.7 | 26 | 3.0 | 37 | 28 | 61 | 6223/325 |
+| Qwen3.5-9B | E4-W | 373/997 | 6.2 | 26 | 2.8 | 49 | 66 | 44 | 6268/313 |
+| Gemma-4-E4B | E4-A | 184/997 | 1.5 | 8 | 2.5 | 0 | 0 | 0 | 3103/70 |
+| Gemma-4-E4B | E4-A2 | 197/997 | 2.3 | 12 | 3.3 | 1 | 0 | 0 | 4538/88 |
+| Gemma-4-E4B | E4-W | 64/997 | 0.7 | 10 | 1.7 | 0 | 0 | 0 | 2277/49 |
+
+### get_syntax adoption
+
+| Model | Cond | syntax calls | eps ≥1 syntax | calls/engaged ep | distinct tokens/engaged ep | resolution |
+|---|---|---|---|---|---|---|
+| Qwen3.5-9B | E4-A | 67 | 67 | 1.0 | 0.0 | {'unresolved': 67} |
+| Qwen3.5-9B | E4-A2 | 90 | 90 | 1.0 | 0.0 | {'unresolved': 90} |
+| Qwen3.5-9B | E4-W | 408 | 87 | 4.7 | 4.7 | {'token_id': 400, 'exact': 8} |
+| Gemma-4-E4B | E4-A | 5 | 5 | 1.0 | 0.0 | {'unresolved': 5} |
+| Gemma-4-E4B | E4-A2 | 43 | 43 | 1.0 | 0.0 | {'unresolved': 43} |
+| Gemma-4-E4B | E4-W | 30 | 20 | 1.5 | 1.5 | {'token_id': 30} |
+
+### Edge coverage (E4-W, arcs revealed / arcs)
+
+| Model | mean coverage | mean content-only | zero-call eps |
+|---|---|---|---|
+| Qwen3.5-9B | 0.0544 | 0.0538 | 910 |
+| Gemma-4-E4B | 0.0117 | 0.0113 | 977 |
+
+Per-sentence chrF++ by coverage bin (H4: assembly < spot means partial structure beats the assembled picture)
+
+| Model | none | spot (≤⅓) | partial (⅓–¾] | assembly (>¾) |
+|---|---|---|---|---|
+| Qwen3.5-9B | 910 eps, 46.15 | 8 eps, 43.52 | 54 eps, 39.09 | 25 eps, 42.22 |
+| Gemma-4-E4B | 977 eps, 39.49 | 4 eps, 38.29 | 12 eps, 19.64 | 4 eps, 14.83 |
+
+## Interpretation — word-level syntax (E4-W) and budget raise (E4-A2)
+
+*(Post-hoc analysis beyond the tables above: matched-sentence contrasts and
+qualitative inspection. All sentence-level chrF deltas computed with the same
+sacrebleu CHRF(word_order=2) as the corpus scores.)*
+
+### Headline: granularity is a framing effect, not an information effect
+
+The word-level tool did change outcomes — but **on episodes that never
+called it**. Splitting the granularity contrast E4-W − E4-A2 by whether the
+episode used `get_syntax`:
+
+| Model | Group | n | Δ(E4-W − E4-A2) per sentence | bootstrap CI |
+|---|---|---|---|---|
+| Qwen3.5-9B | syntax-engaged | 87 | −0.67 | [−3.31, +2.00] n.s. |
+| Qwen3.5-9B | never called get_syntax | 910 | **−0.49** | **[−0.90, −0.08] ✱** |
+| Gemma-4-E4B | syntax-engaged | 20 | +1.21 | [−3.50, +5.80] n.s. |
+| Gemma-4-E4B | never called get_syntax | 977 | **+0.40** | **[+0.08, +0.72] ✱** |
+
+Counterfactual corpus check (replace engaged episodes' E4-W outputs with
+their own E4-A2 outputs): engaged episodes contribute only **−0.23** of
+Qwen's −1.28 corpus gap and **−0.07** of Gemma's +0.68 gain. The
+substantive effect of the word-level tool lives in the **schema/description
+framing** seen by every episode, not in the structural information it
+returns:
+
+- **Qwen (−0.49 ✱ diffuse):** a per-word syntax tool in the schema makes
+  Qwen slightly worse *even when unused* — one more piece of retrievable
+  equipment nudges it away from translation and toward procedure.
+- **Gemma (+0.40 ✱ diffuse):** the specialist-sounding tool *collapsed
+  Gemma's engagement* — episodes with any tool calls fell 197 → 64, mean
+  context 4538 → 2277 tokens — and its quality rose, exactly the
+  zero-call-framing-anchor mechanism from the E4-A analysis. Gemma doesn't
+  gain syntax; it gains *permission to not intervene*.
+
+### H1 (adoption) — confirmed; H2 (granularity value) — refuted as stated
+
+Word-level addressing fixed the adoption problem the digest had (Qwen: 67
+calls total for the sentence-level digest → 408 for the word-level tool;
+Gemma 5 → 30), and engaged episodes do assemble (Qwen: 79/87 engaged
+episodes reach >⅓ arc coverage; 25 reach >¾ — ~4.7 calls/engaged episode,
+chaining dependents and heads). But assembly bought nothing: engaged-episode
+deltas are −0.67 (Qwen) and +1.21 (Gemma), both indistinguishable from
+zero, and the bin table's alarming numbers (partial/assembly 19–42 chrF vs
+"none" 46) are **selection, not damage**: the episodes where models choose
+to query syntax are intrinsically 5.6 (Qwen) / 17.9 (Gemma) chrF harder,
+measured on their own E4-A2 outputs. Syntax queries are a *difficulty
+signal* ("use this if unsure about the structure" is what the description
+says, and the models obey), not a cause of failure.
+
+### H3 (budget): artifacts down, pathology not rescued
+
+E4-A2 − E4-A = **+1.59 ✱** (Qwen), +0.66 n.s. (Gemma). The raise did its
+protocol job: budget-forced 145 → 37, skipped calls 334 → 28. But the
+matched-sentence decomposition shows the gain does **not** come from
+rescuing strangled episodes: the 145 previously budget-forced episodes
+score **−1.91** *worse* under relief (they now finish "voluntarily" after
+16.6 calls instead of being cut at 24 — more rope for the brute-force
+fetch loops, no better outcomes), while the diffuse +0.63 on the 852
+never-limited episodes is within ~2 SE of greedy run-to-run nondeterminism
+and cannot carry a causal budget story alone. Conclusion: the fixed
+24-call cap was a *protocol artifact*, not a quality constraint — removing
+it cleans the data without buying translation quality.
+
+### Case study (integration failure with full information)
+
+Qwen E4-W, the Alonso sentence (32 calls, 12 syntax calls = full tree):
+
+> ئالونسونىڭ ئالدىدىكى ماشىنىلار … ئۇ يېڭىشنى كۆزلەپ ئالغا قاراپ ماڭدى.
+> ref: "As the cars ahead of Alonso went in for fuel under the safety car,
+> he moved up the pack to take victory."
+> E4-W: "…he walked forward looking for a **shortcut**."
+
+Everything needed was in context: #13 يېڭىشنى was gloss-fetched
+("yeng- (vt.): To beat, overcome, surmount, **win over**") *and*
+syntax-queried (obj); #15 ئالغا was lemma-resolved. The model still
+produced "shortcut" — plausibly contaminated by the false-friend lemma
+ئال ("[obsolete] Ruse; **trick**"). Twelve dependency lookups did not
+compensate: this is the pull tax in its purest form — information
+retrieved, structure confirmed, integration failed. (E4-A2 on the same
+sentence: "looking for a new spot" — same failure mode without the syntax
+calls.)
+
+### Verdict for the thesis
+
+- Chapter law stands, again: every pull arm stays **3.2–4.5 chrF ✱ below
+  C3L** for both models; push remains dominant.
+- The word-level experiment's real finding: **tool granularity operates on
+  the framing channel** (what the schema tells the model about how to
+  behave), which dominates the information channel by an order of
+  magnitude. Writing a *specialist, opt-in-sounding* description shrinks a
+  weak model's harmful over-intervention; the same tool offered generally
+  invites the strong model to substitute procedure for translation.
+- Qwen's best pull cell remains a budget-relieved **E4-A2** (45.14), still
+  −3.17 ✱ under C3L — the recommendation (lean static C3L push everywhere)
+  is unchanged and now budget-robust.
+
+## Extension — Gemma-4-12B in agentic mode (run_exp4_gemma12.sh)
+
+Motivation: Gemma-4-E4B was the only model whose thinking helped in the
+agent loop (+1.57 ✱, the "activator" case). Does the pattern hold for the
+stronger Gemma-4-12B (C0 45.62 — competent, not under-engaged)?
+
+### The pull tax vanishes at Gemma-4-12B
+
+E4-A − C3L = **−0.33 [−0.77, +0.09] n.s.** and E4-AT − C3L = **−0.02 n.s.**
+— the first measured model where agentic retrieval *ties* the best static
+push (all previous models: Qwen-9B −4.76 ✱, Gemma-E4B −4.74 ✱,
+Ministral-8B −10.65 ✱, Llama-8B −6.04 ✱). E4-A also (marginally) beats the
+full static pipeline C7 (+0.43, p=0.054). Note this is not pure competence:
+Qwen3.5-9B has the same zero-shot level (C0 47.63) and still pays the full
+tax — agent-readiness is a family property (Gemma-4's instruction tuning),
+not a scale law.
+
+### Two routes to the same plateau — reasoning and retrieval substitute
+
+- **E4-A (thinking off)**: universal, *healthy* tool engagement — 997/997
+  episodes, 8 calls/ep (word_list, then ~5.6 targeted glosses, lemma for
+  unknowns), zero budget-forced, zero degeneration. The +1.50 ✱ over C0 is
+  genuine tool value (matched sentences: 46.78 vs their C0 45.28). Contrast
+  with Ministral's brute-force regime (22.8 calls/ep, 751 budget-forced):
+  12B fetches selectively and stops.
+- **E4-AT (thinking on)**: 80% of episodes decline tools entirely and
+  reason internally (5.7k think chars mean). Zero-call episodes score 48.04
+  — *above* C3L on the same sentences (47.92); with-calls episodes (hard
+  sentences) score below C3L-on-same (42.43 vs 43.26).
+- Net: C3L push, diligent agent, and thinking recluse all land at
+  47.1–47.5. At this competence level the model reaches the plateau by
+  three different routes, and thinking adds nothing significant over
+  agency (E4-AT − E4-A +0.31 n.s.) — the E4B activator effect (+1.57 ✱)
+  fades once zero-shot competence is sufficient. (Sampling confound
+  applies: E4-AT recommended vs E4-A greedy; both arms already tie C3L, so
+  an E4-AS control would not change the conclusion.)
+
+### Calibration gradient
+
+Gloss-fetch calibration improves with model scale: recall 0.077 (E4B) →
+0.353 (12B), precision 0.189 → 0.228. Selectivity scales; precision stays
+~0.2 — "fetches much, hits sometimes" persists, but at 12B the hits suffice
+to pay for the loop.
+
+### Verdict for the thesis
+
+The chapter law needs its qualification: **pull never *beat* push on any
+model — but at Gemma-4-12B the pull tax shrinks to statistical zero.** The
+C3L recommendation survives (equal-best, deterministic, no agent-loop cost
+or 12.6k-token contexts), but "pull is strictly dominated" is now
+model-dependent: for chat-tuned agent-ready families at ≥12B, agentic
+retrieval is a legitimate alternative, and thinking mode substitutes for
+retrieval rather than complementing it.
