@@ -39,8 +39,8 @@ from experiments.common.prompt_variants import (  # noqa: E402
     load_references,
 )
 from experiments.exp5_thinking_static.cells import (  # noqa: E402
-    ARMS, CONDITIONS, DEV_REF, FLORES_RESULTS_PATH, MODELS, cell_path,
-    thinking_stats,
+    ARMS, CONDITIONS, DEV_REF, FLORES_RESULTS_PATH, MODELS,
+    THINK_MARKER_BY_TAG, cell_path, thinking_stats,
 )
 
 # Stop-rule gate inherited from Exp2b: below this answered rate a thinking
@@ -103,6 +103,8 @@ def run_cells(args, model_id, tag, records, refs):
                             [id_to_prompt[it["id"]] for it in chunk],
                             max_tokens=max_tokens,
                             enable_thinking=enable_thinking,
+                            think_marker=(THINK_MARKER_BY_TAG.get(tag)
+                                          if enable_thinking else None),
                             **sampling,
                         )
                         for it, gen in zip(chunk, gens):

@@ -84,6 +84,19 @@ def _split_thinking(raw: str) -> tuple[str, str, bool]:
     return raw.strip(), "", False
 
 
+def _split_thinking_marker(raw: str, marker: str) -> tuple[str, str, bool]:
+    """Split a thinking-mode generation on a model-specific channel marker.
+
+    Gemma-4 with enable_thinking=True emits reasoning first, then the
+    channel marker '<channel|>', then the content — the same convention as
+    agent_loop.THINK_MARKER_BY_MODEL in the Exp4 agent loop.
+    """
+    if marker in raw:
+        reasoning, answer = raw.split(marker, 1)
+        return reasoning.strip(), answer.strip(), True
+    return raw.strip(), "", False
+
+
 def chat_generate(
     llm: LLM,
     user_prompts: List[str],
@@ -92,12 +105,16 @@ def chat_generate(
     enable_thinking: bool = False,
     top_p: float = 1.0,
     top_k: int = -1,
+    think_marker: str = None,
 ) -> List[Dict]:
     """Batch-generate one completion per prompt via the model's chat template.
 
     With enable_thinking=True, the returned dicts additionally carry
     'reasoning' (raw reasoning text, for loop analysis) and 'answered'
-    (False = never closed the think block within max_tokens).
+    (False = never closed the think block within max_tokens). The split
+    convention is model-specific: Qwen closes its pre-filled thinking block
+    with the standard closing tag (default); Gemma-4 delimits its thought
+    channel with '<channel|>' — pass think_marker for that family.
 
     top_p/top_k allow vendor-recommended thinking-mode sampling
     (temperature=0.6, top_p=0.95, top_k=20 for Qwen3 thinking).
@@ -123,7 +140,10 @@ def chat_generate(
     for out in outputs:
         raw = out.outputs[0].text
         if enable_thinking:
-            reasoning, text, answered = _split_thinking(raw)
+            if think_marker:
+                reasoning, text, answered = _split_thinking_marker(raw, think_marker)
+            else:
+                reasoning, text, answered = _split_thinking(raw)
         else:
             reasoning, answered = None, True
             text = _strip_think(raw)

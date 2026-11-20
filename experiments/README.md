@@ -334,16 +334,17 @@ bash experiments/exp4_agentic_retrieval/run_exp4_gemma12.sh   # batch-safe, ~3-6
 ## Experiment 5 — thinking mode × C3L (`exp5_thinking_static/`)
 
 Does native thinking substitute for, complement, or interfere with the pushed
-lemma-keyed glosses? 2×2(+1) grid per model over FLORES dev: arm A greedy
-(reuse; Qwen-27B C3L generated here), arm S thinking-OFF + recommended
-sampling (deconfound), arm T thinking-ON (Qwen C0 reused from Exp2b). Models:
-Qwen3.5-9B/27B, Gemma-4-E4B. Headline contrast: the interaction
-[T.C3L−T.C0] − [S.C3L−S.C0]. Scorer adds thinking diagnostics (Exp2b
-calibration) and a gloss-citation analysis: do the pushed glosses get
-reasoned about (targets = first-sense keyword + Latin lemma per dict-covered
-token; C0-T is the never-shown control). Design: `exp5_thinking_static/DESIGN.md`.
+lemma-keyed glosses? Per model: arm A greedy (reuse) vs arm T thinking-ON +
+recommended sampling (Qwen C0-T reused from Exp2b; 3 cells generated).
+Models: Qwen3.5-9B, Gemma-4-E4B (27B and the sampling-control arm dropped —
+revision notes in `exp5_thinking_static/DESIGN.md`; 27B moves to the later
+C0/C3L/A/AT/C3L-T study). Headline contrast: the interaction
+[T.C3L−T.C0] − [A.C3L−A.C0]. Scorer adds thinking diagnostics and a
+gloss-citation analysis (targets = first-sense keyword + Latin lemma per
+dict-covered token; C0-T is the never-shown control). Includes the Gemma
+`<channel|>` static-thinking fix in `vllm_runner.chat_generate`.
 
 ```bash
-bash experiments/exp5_thinking_static/run_exp5.sh   # batch-safe, ~5-7 h GPU;
+bash experiments/exp5_thinking_static/run_exp5.sh   # batch-safe, ~3-5 h GPU;
 # Gemma static-thinking smoke gate aborts before the full run if unconfirmed
 ```

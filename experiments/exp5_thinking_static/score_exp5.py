@@ -1,17 +1,19 @@
 """
 score_exp5.py - Exp 5 analysis: thinking mode x C3L.
 
-Per model, the 2x2(+1) grid:
-  arm A  greedy    (reuse; Qwen-27B C3L generated in this experiment)
-  arm S  offrec    thinking OFF + recommended sampling
-  arm T  thinkrec  thinking ON  + recommended sampling
+Per model, the 2x2 grid (REVISED — S arm dropped; see cells.py):
+  arm A  greedy    thinking OFF, t=0 (reuse)
+  arm T  thinkrec  thinking ON + recommended sampling
 
-Contrasts (paired bootstrap, chrF++; COMET reported descriptively):
-  T.C3L − S.C3L    thinking effect on the lean optimum (primary)
-  T.C0  − S.C0     thinking effect on the zero-shot baseline
-  ΔDID = [T.C3L−T.C0] − [S.C3L−S.C0]   does thinking change what the gloss
+Contrasts (paired bootstrap, chrF++):
+  T.C3L − A.C3L    thinking (+decoding) effect on the lean optimum
+  T.C0  − A.C0     thinking effect on the zero-shot baseline
+  ΔDID = [T.C3L−T.C0] − [A.C3L−A.C0]   does thinking change what the gloss
                                         column is worth? (the headline)
-  S.C3L − A.C3L, S.C0 − A.C0            sampling sanity check
+
+NOTE: T changes thinking AND sampling vs A (Exp2b's main-arm convention; the
+offrec control was dropped — thinking-off sampling measured inert, and
+thinking+greedy is measured-catastrophic for Qwen).
 
 Mechanistic analysis (arm T only, unique to this experiment):
   gloss-citation rate — do the pushed glosses get reasoned about? For each
@@ -43,7 +45,7 @@ from experiments.exp5_thinking_static.cells import (  # noqa: E402
     FLORES_RESULTS_PATH, MODELS, RESULTS_DIR, cell_path, thinking_stats,
 )
 
-ARMS = ["greedy", "offrec", "thinkrec"]
+ARMS = ["greedy", "thinkrec"]
 CONDS = {"c0_baseline": "C0", "c3_dict_lemma": "C3L"}
 
 
@@ -87,7 +89,7 @@ def boot_pair(stats_a, stats_b, n_boot, seed=12345):
 
 def boot_did(stats_c0_s, stats_c3l_s, stats_c0_t, stats_c3l_t, n_boot,
              seed=12345):
-    """Bootstrap of [T.C3L−T.C0] − [S.C3L−S.C0] (the interaction)."""
+    """Bootstrap of [T.C3L−T.C0] − [A.C3L−A.C0] (the interaction)."""
     rng = np.random.default_rng(seed)
     n = len(stats_c0_s)
 
@@ -190,7 +192,7 @@ def main():
                 entry["recs"] = load_recs(path)
             runs[(name, CONDS[c], a)] = entry
         scored.append(name)
-        print(f"[exp5-score] loaded {name}: 2 conds x 3 arms "
+        print(f"[exp5-score] loaded {name}: 2 conds x {len(ARMS)} arms "
               f"(n={list(lens.values())[0]})", flush=True)
     if not scored:
         sys.exit("[exp5-score] no complete model grids found — nothing to do")
@@ -223,23 +225,19 @@ def main():
     for name in scored:
         for cond in ("C0", "C3L"):
             a = runs[(name, cond, "greedy")]["stats"]
-            s = runs[(name, cond, "offrec")]["stats"]
             t = runs[(name, cond, "thinkrec")]["stats"]
-            for label, (sa, sb) in {
-                f"T.{cond} − S.{cond} (thinking)": (s, t),
-                f"S.{cond} − A.{cond} (sampling)": (a, s),
-            }.items():
-                d, lo, hi, p = boot_pair(sa, sb, args.n_boot)
-                deltas[(name, label)] = {"delta": d, "lo": lo, "hi": hi, "p": p}
-                print(f"[exp5-score] {name} {label}: {d:+.2f} "
-                      f"[{lo:+.2f}, {hi:+.2f}] p={p:.4f}", flush=True)
+            d, lo, hi, p = boot_pair(a, t, args.n_boot)
+            label = f"T.{cond} − A.{cond} (thinking)"
+            deltas[(name, label)] = {"delta": d, "lo": lo, "hi": hi, "p": p}
+            print(f"[exp5-score] {name} {label}: {d:+.2f} "
+                  f"[{lo:+.2f}, {hi:+.2f}] p={p:.4f}", flush=True)
         d, lo, hi, p = boot_did(
-            runs[(name, "C0", "offrec")]["stats"],
-            runs[(name, "C3L", "offrec")]["stats"],
+            runs[(name, "C0", "greedy")]["stats"],
+            runs[(name, "C3L", "greedy")]["stats"],
             runs[(name, "C0", "thinkrec")]["stats"],
             runs[(name, "C3L", "thinkrec")]["stats"], args.n_boot)
         deltas[(name, "DID")] = {"delta": d, "lo": lo, "hi": hi, "p": p}
-        print(f"[exp5-score] {name} DID [T.C3L−T.C0]−[S.C3L−S.C0]: {d:+.2f} "
+        print(f"[exp5-score] {name} DID [T.C3L−T.C0]−[A.C3L−A.C0]: {d:+.2f} "
               f"[{lo:+.2f}, {hi:+.2f}] p={p:.4f}", flush=True)
 
     # ---- thinking behavior + gloss citations ----------------------------------
@@ -254,9 +252,8 @@ def main():
                 cites[f"{name}|{CONDS[c]}"] = citation_stats(
                     runs[(name, CONDS[c], "thinkrec")]["recs"], records)
         # non-thinking arms: degeneration guard (looping finals)
-        for a in ("greedy", "offrec"):
-            st = thinking_stats(cell_path(tag, "c3_dict_lemma", a))
-            tstats[f"{name}|C3L|{a}"] = st
+        st = thinking_stats(cell_path(tag, "c3_dict_lemma", "greedy"))
+        tstats[f"{name}|C3L|greedy"] = st
 
     # ---- persist ---------------------------------------------------------------
     out = {
@@ -278,8 +275,8 @@ def main():
 
     # ---- markdown -----------------------------------------------------------------
     L = ["", "## Experiment 5 — thinking mode x C3L", ""]
-    L += ["| Model | Cond | arm A greedy | arm S offrec | arm T thinkrec |",
-          "|" + "---|" * 5]
+    L += ["| Model | Cond | arm A greedy | arm T thinkrec |",
+          "|" + "---|" * 4]
     for name in scored:
         for cond in ("C0", "C3L"):
             row = [name, cond]

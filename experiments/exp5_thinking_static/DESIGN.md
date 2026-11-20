@@ -1,9 +1,28 @@
 # Experiment 5 — Thinking Mode × C3L (the lean optimum)
 
-**Status: IMPLEMENTED, ready to run** (`run_exp5.sh`; cells registry in
-`cells.py` — 7 reuse cells verified complete on disk, 11 cells to generate;
-C3L prompt rebuild verified byte-identical to the Exp3 stored prompts,
-50/50). Run and analysis: `run_exp5.py` / `score_exp5.py`.
+**Status: REVISED (shortened) after the first smoke run, ready to run.**
+
+Revision notes (user decision + measured evidence):
+- **Root cause of the aborted first run**: `vllm_runner.chat_generate` split
+  thinking output with the Qwen ` ``` ` convention only. Gemma-4's static
+  thinking works — its output is reasoning + `<channel|>` + answer — but was
+  mis-split, so every record came out `answered=False`. Fixed: chat_generate
+  now takes `think_marker` (Gemma: `<channel|>`, same as agent_loop's
+  THINK_MARKER_BY_MODEL); the smoke gate deletes stale `_n3` files (they
+  look complete to the checkpoint resume even when corrupt).
+- **S arm (offrec) dropped** — thinking-off sampling was measured inert
+  (E4-AS vs E4-A); T−A therefore changes thinking + decoding together, as
+  Exp2b's main arms did.
+- **Greedy thinking rejected** — Exp2b measured Qwen-9B thinking+greedy as
+  catastrophically non-terminating (76.5%/37.0% answered on C0/C7, n200);
+  sampling parameters do not affect generation speed, so greedy would buy
+  only the known failure mode.
+- **Qwen-27B deferred** to the later per-model study (C0/C3L/A/AT/C3L-T for
+  Gemma-31B and Qwen-27B), gated on whether this experiment shows a
+  thinking×gloss interaction worth measuring.
+
+Net: 3 generated cells (Qwen-9B C3L-T; Gemma-E4B C0-T/C3L-T) + 5 reuse
+  cells — ~3-5 h GPU. Qwen C0-T reuse is the Exp2b think-recommended run.
 
 ## Research question
 

@@ -6,10 +6,23 @@ nothing heavy. Reused cells point at their origin experiment's file —
 run_exp5.py's checkpoint resume sees them complete and skips them, the
 scorer reads them in place.
 
-Arms (DESIGN.md):
+Arms: greedy (thinking OFF, t=0 — arm A, reuse) and thinkrec (thinking ON,
+recommended sampling — arm T). Qwen C0-T is reused from Exp2b; Qwen C3L-T
+and both Gemma T cells are the three cells this experiment generates.
+
+Arms (DESIGN.md; REVISED after the first smoke run — see the status note):
   greedy    thinking OFF, temperature 0          — the Exp1-3 regime (arm A)
-  offrec    thinking OFF, recommended sampling  — sampling control (arm S)
   thinkrec  thinking ON,  recommended sampling  — thinking arm (arm T)
+
+Revision (user decision + Exp2b evidence): the offrec sampling-control arm
+was dropped to shorten the run (thinking-off sampling was shown inert in
+E4-AS vs E4-A), Qwen-27B is deferred to the later per-model study
+(C0/C3L/A/AT/C3L-T for Gemma-31B and Qwen-27B, gated on this experiment's
+outcome), and the T arm keeps RECOMMENDED sampling because Exp2b measured
+Qwen thinking+greedy as catastrophically non-terminating (37-76% answered,
+n200 runs) — sampling params do not affect generation speed, so greedy
+would buy nothing but the known failure mode. T vs A therefore changes
+thinking + decoding together, exactly as Exp2b's main arms did.
 
 Caveat handled here: dev.results.jsonl was regenerated (numbered-sense
 glosses) between the Exp1/2 and Exp3 runs. All C3L cells read the current
@@ -39,13 +52,24 @@ RECOMMENDED_SAMPLING = {"temperature": 0.6, "top_p": 0.95, "top_k": 20}
 ARMS = {
     # arm -> (enable_thinking, sampling kwargs, max_tokens)
     "greedy":   (False, {"temperature": 0.0}, 512),
-    "offrec":   (False, RECOMMENDED_SAMPLING, 512),
     "thinkrec": (True,  RECOMMENDED_SAMPLING, 16384),
+}
+
+# Thinking-output split convention (agent_loop.THINK_MARKER_BY_MODEL's
+# static-prompt twin): Qwen uses the standard  </think> closing tag handled
+# by vllm_runner._split_thinking; Gemma-4 delimits its thought channel with
+# '<channel|>' — verified in the Exp5 smoke records.
+THINK_MARKER_BY_TAG = {
+    "qwen3.5-9b": None,
+    "gemma-4-e4b-it": "<channel|>",
+    "gemma-4-12b-it": "<channel|>",  # same family (see run_exp4_gemma12.sh)
 }
 
 MODELS = [
     ("Qwen/Qwen3.5-9B", "qwen3.5-9b", "Qwen3.5-9B"),
-    ("Qwen/Qwen3.5-27B", "qwen3.5-27b", "Qwen3.5-27B"),
+    # Qwen3.5-27B deferred to the later per-model study (C0/C3L/A/AT/C3L-T);
+    # its greedy C0/C3L cells and Exp2b think-recommended C0 cell remain
+    # available in REUSE below for that study.
     ("google/gemma-4-E4B-it", "gemma-4-e4b-it", "Gemma-4-E4B"),
 ]
 

@@ -1,16 +1,23 @@
 #!/bin/bash
-# run_exp5.sh - Experiment 5: thinking mode x C3L (Qwen3.5-9B/27B, Gemma-4-E4B).
+# run_exp5.sh - Experiment 5: thinking mode x C3L (REVISED, shortened).
 # Self-contained for a batch job (fresh-$TMPDIR safe). See DESIGN.md.
 #
-#   arm A  greedy    reuse (Exp1/2/3) — except Qwen-27B C3L (generated here)
-#   arm S  offrec    thinking OFF + recommended sampling (new)
-#   arm T  thinkrec  thinking ON  + recommended sampling (Qwen C0 reused
-#                    from Exp2b; Qwen C3L + all Gemma cells new)
-#   16k token budget for thinking cells; 24k context. ~5-7 h GPU total.
+#   arm A  greedy    reuse (Exp2/Exp3) — zero generation cost
+#   arm T  thinkrec  thinking ON + recommended sampling, 16k budget
+#                    (Qwen C0-T reused from Exp2b; the 3 generated cells are
+#                    Qwen-9B C3L-T and Gemma-E4B C0-T/C3L-T)  ~3-5 h GPU
 #
-#   Gemma risk item (DESIGN.md): enable_thinking validated for Gemma only in
-#   the E4-AT agent loop. The smoke gate below aborts before the full run if
-#   Gemma's STATIC thinking cells produce no reasoning.
+#   Qwen-27B and the offrec sampling-control arm were dropped (user decision;
+#   evidence in cells.py's revision note: thinking-off sampling measured
+#   inert, thinking+greedy measured catastrophic for Qwen, sampling params
+#   don't affect speed). 27B moves to the later per-model study
+#   (C0/C3L/A/AT/C3L-T), gated on this experiment's outcome.
+#
+#   Gemma smoke gate: validates the static-prompt thinking channel
+#   (<channel|> marker split in vllm_runner.chat_generate). The first run
+#   of this script exposed the Qwen-only split bug — the smoke records were
+#   regenerated with the fix, so the gate now also deletes stale _n3 files
+#   (they look "complete" to the checkpoint resume even when corrupt).
 #
 # Usage:  bash /home/hpc/b279bb/b279bb29/uyghur-llm-mt/experiments/exp5_thinking_static/run_exp5.sh
 
@@ -35,26 +42,9 @@ if [ ! -x "${TMPDIR}/scoring/bin/python" ]; then
 fi
 "${TMPDIR}/scoring/bin/python" -c "import comet, sacrebleu; print('[exp5] scoring env OK')"
 
-# --- smoke gate: Gemma static thinking (3 episodes, thinking arm only) ------
+# --- full runs (2 models; greedy cells are reuse and auto-skip) --------------
 "$PY" -u experiments/exp5_thinking_static/run_exp5.py --phase translate \
-    --models google/gemma-4-E4B-it --arms thinkrec --limit 3
-
-"$PY" - <<'SMOKE'
-import json, sys
-path = "experiments/exp5_thinking_static/results/gemma-4-e4b-it_c0_baseline_thinkrec_n3.results.jsonl"
-recs = [json.loads(l) for l in open(path, encoding="utf-8")]
-ok = [r for r in recs if r.get("answered") and (r.get("reasoning") or "").strip()]
-print(f"[exp5] Gemma smoke: {len(ok)}/{len(recs)} episodes answered with reasoning")
-if len(ok) < 2:
-    print("[exp5] !! Gemma static thinking NOT confirmed — aborting before the "
-          "full run. Report as 'not thinking-capable in static mode' "
-          "(DESIGN.md fallback) and proceed with --models Qwen only.")
-    sys.exit(1)
-SMOKE
-
-# --- full runs (all models, all arms; checkpoint resume per cell) ------------
-"$PY" -u experiments/exp5_thinking_static/run_exp5.py --phase translate \
-    --models Qwen/Qwen3.5-9B Qwen/Qwen3.5-27B google/gemma-4-E4B-it
+    --models Qwen/Qwen3.5-9B google/gemma-4-E4B-it
 
 # --- analysis (scoring env) ---------------------------------------------------
 "${TMPDIR}/scoring/bin/python" -u experiments/exp5_thinking_static/score_exp5.py
