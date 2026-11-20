@@ -40,7 +40,9 @@ sys.path.insert(0, os.path.join(os.path.dirname(os.path.abspath(__file__)), ".."
 from significance import _segment_stats, _corpus_from_stats  # noqa: E402
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-sys.path.insert(0, os.path.dirname(HERE))
+# repo root (two levels up): running this script directly puts only its own
+# directory on sys.path, so the `experiments` package would not resolve
+sys.path.insert(0, os.path.dirname(os.path.dirname(HERE)))
 from experiments.exp5_thinking_static.cells import (  # noqa: E402
     FLORES_RESULTS_PATH, MODELS, RESULTS_DIR, cell_path, thinking_stats,
 )

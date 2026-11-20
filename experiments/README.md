@@ -348,3 +348,11 @@ dict-covered token; C0-T is the never-shown control). Includes the Gemma
 bash experiments/exp5_thinking_static/run_exp5.sh   # batch-safe, ~3-5 h GPU;
 # Gemma static-thinking smoke gate aborts before the full run if unconfirmed
 ```
+
+**Result (complete):** substitution for Gemma (thinking +12.09 ✱ on C0 but
+−0.56 ✱ on C3L; DID −12.65 ✱), interference for Qwen (gloss benefit flips
++0.67 → −0.98 under thinking; loss dominated by non-termination, but the
+gloss table also destabilizes reasoning — more loops, more length-caps).
+C3L is the best cell in every regime; C3L-Thinking dropped from the planned
+Gemma-31B/Qwen-27B study (C0/C3L/E4-A/E4-AT only). See
+`exp5_thinking_static/ANALYSIS.md`.

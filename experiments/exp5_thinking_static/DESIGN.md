@@ -1,6 +1,9 @@
 # Experiment 5 — Thinking Mode × C3L (the lean optimum)
 
-**Status: REVISED (shortened) after the first smoke run, ready to run.**
+**Status: RUN COMPLETE, analyzed — see `ANALYSIS.md`.** Verdict:
+substitution (Gemma DID −12.65 ✱) and interference (Qwen, gloss benefit
+flips +0.67 → −0.98 via reasoning destabilization); C3L best in every
+regime; C3L-Thinking dropped from the planned 27B/31B study.
 
 Revision notes (user decision + measured evidence):
 - **Root cause of the aborted first run**: `vllm_runner.chat_generate` split
